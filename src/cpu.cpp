@@ -46,3 +46,12 @@ void Cpu::load_rom(const char* filepath) {
     // Clean up
     rom.close();
 }
+
+void Cpu::emulate() {
+    uint8_t opcode = mmu.at(pc);
+
+    switch (opcode) {
+        case 0x00: break; // NOP
+        case 0x01: break;
+    }
+}
