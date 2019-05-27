@@ -48,7 +48,8 @@ void Cpu::load_rom(const char* filepath) {
 }
 
 void Cpu::emulate() {
-    uint8_t opcode = mmu.at(pc);
+    // 4 cycles
+    uint8_t opcode = read_mmu(pc);
 
     switch (opcode) {
         case 0x00: break; // NOP

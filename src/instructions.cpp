@@ -2,7 +2,7 @@
 
 uint8_t Cpu::get_n() {
     ++pc;
-    return read(pc);
+    return read_mmu(pc);
 }
 
 uint16_t Cpu::get_nn() {
@@ -35,11 +35,11 @@ void Cpu::LD_r_r(uint8_t& x, uint8_t y) {
 }
 
 void Cpu::LD_r_rrp(uint8_t& x, uint8_t y) {
-    x = read(y);
+    x = read_mmu(y);
 }
 
 void Cpu::LD_rrp_r(uint8_t& x, uint8_t y) {
-    write(x, y);
+    write_mmu(x, y);
 }
 
 void Cpu::LD_rr_nn(uint16_t& x) {

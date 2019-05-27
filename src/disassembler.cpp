@@ -24,13 +24,16 @@ struct I8Helper {
 
 // Formatting for u16, u8, and i8 in hex
 inline std::ostream& operator<<(std::ostream& out, const U16Helper& h) {
-    return out << "$" << std::setw(4) << std::setfill('0') << static_cast<int>(h.u16);
+    return out << "$" << std::hex << std::setw(4) << std::setfill('0')
+               << static_cast<int>(h.u16);
 }
 inline std::ostream& operator<<(std::ostream& out, const U8Helper& h) {
-    return out << "$" << std::setw(4) << std::setfill('0') << static_cast<int>(h.u8);
+    return out << "$" << std::hex << std::setw(4) << std::setfill('0')
+               << static_cast<int>(h.u8);
 }
 inline std::ostream& operator<<(std::ostream& out, const I8Helper& h) {
-    return out << "$" << std::setw(4) << std::setfill('0') << static_cast<int>(h.i8);
+    return out << "$" << std::hex << std::setw(4) << std::setfill('0')
+               << static_cast<int>(h.i8);
 }
 
 // Converts value into its respective type's helper class
@@ -46,94 +49,94 @@ U8Helper hex(int8_t i8) {
 }
 
 void Cpu::disassemble_op() {
+    // Because get_n(), get_nn(), and get_i() change the value of PC,
+    // they are not reused here.
+
     // Get the next byte in memory
-    auto byte = [=]() -> uint8_t {
+    auto n = [=]() -> uint8_t {
         ++pc;
         return mmu.at(pc);
     };
 
     // Get the next word in memory
-    auto word = [=]() -> uint16_t {
-        uint16_t b = byte() << 0;
-        return b | byte() << 8;
+    auto nn = [=]() -> uint16_t {
+        uint16_t b = n() << 0;
+        return b | n() << 8;
     };
 
     // Get the next byte and turn it into a signed int
-    auto i8 = [=]() -> int8_t {
-        uint8_t u8 = byte();
+    auto i = [=]() -> int8_t {
+        uint8_t u8 = n();
         return static_cast<int8_t>(u8);
     };
-
-    // Set cout formatting
-    cout << std::hex;
 
     // Print current memory address
     cout << hex(pc) << "        ";
 
     switch (mmu.at(pc)) {
         case 0x00: cout << "NOP" << endl; break;
-        case 0x01: cout << "LD    BC," << hex(word()) << endl; break;
+        case 0x01: cout << "LD    BC," << hex(nn()) << endl; break;
         case 0x02: cout << "LD    (BC),A" << endl; break;
         case 0x03: cout << "INC   BC" << endl; break;
         case 0x04: cout << "INC   B" << endl; break;
         case 0x05: cout << "DEC   B" << endl; break;
-        case 0x06: cout << "LD    B," << hex(byte()) << endl; break;
+        case 0x06: cout << "LD    B," << hex(n()) << endl; break;
         case 0x07: cout << "RLCA" << endl; break;
-        case 0x08: cout << "LD    (" << hex(word()) << "),SP" << endl; break;
+        case 0x08: cout << "LD    (" << hex(nn()) << "),SP" << endl; break;
         case 0x09: cout << "ADD   HL,BC" << endl; break;
         case 0x0a: cout << "LD    A,(BC)" << endl; break;
         case 0x0b: cout << "DEC   BC" << endl; break;
         case 0x0c: cout << "INC   C" << endl; break;
         case 0x0d: cout << "DEC   C" << endl; break;
-        case 0x0e: cout << "LD    C," << hex(byte()) << endl; break;
+        case 0x0e: cout << "LD    C," << hex(n()) << endl; break;
         case 0x0f: cout << "RRCA" << endl; break;
         case 0x10: cout << "STOP  0" << endl; break;
-        case 0x11: cout << "LD    DE," << hex(word()) << endl; break;
+        case 0x11: cout << "LD    DE," << hex(nn()) << endl; break;
         case 0x12: cout << "LD    (DE),A" << endl; break;
         case 0x13: cout << "INC   DE" << endl; break;
         case 0x14: cout << "INC   D" << endl; break;
         case 0x15: cout << "DEC   D" << endl; break;
-        case 0x16: cout << "LD    D," << hex(byte()) << endl; break;
+        case 0x16: cout << "LD    D," << hex(n()) << endl; break;
         case 0x17: cout << "RLA" << endl; break;
-        case 0x18: cout << "JR    " << hex(i8()) << endl; break;
+        case 0x18: cout << "JR    " << hex(i()) << endl; break;
         case 0x19: cout << "ADD   HL,DE" << endl; break;
         case 0x1a: cout << "LD    A,(DE)" << endl; break;
         case 0x1b: cout << "DEC   DE" << endl; break;
         case 0x1c: cout << "INC   E" << endl; break;
         case 0x1d: cout << "DEC   E" << endl; break;
-        case 0x1e: cout << "LD    E," << hex(byte()) << endl; break;
+        case 0x1e: cout << "LD    E," << hex(n()) << endl; break;
         case 0x1f: cout << "RRA" << endl; break;
-        case 0x20: cout << "JR    NZ," << hex(i8()) << endl; break;
-        case 0x21: cout << "LD    HL," << hex(word()) << endl; break;
+        case 0x20: cout << "JR    NZ," << hex(i()) << endl; break;
+        case 0x21: cout << "LD    HL," << hex(nn()) << endl; break;
         case 0x22: cout << "LD    (HL+),A" << endl; break;
         case 0x23: cout << "INC   HL" << endl; break;
         case 0x24: cout << "INC   H" << endl; break;
         case 0x25: cout << "DEC   H" << endl; break;
-        case 0x26: cout << "LD    H," << hex(byte()) << endl; break;
+        case 0x26: cout << "LD    H," << hex(n()) << endl; break;
         case 0x27: cout << "DAA" << endl; break;
-        case 0x28: cout << "JR    Z," << hex(i8()) << endl; break;
+        case 0x28: cout << "JR    Z," << hex(i()) << endl; break;
         case 0x29: cout << "ADD   HL,HL" << endl; break;
         case 0x2a: cout << "LD    A,(HL+)" << endl; break;
         case 0x2b: cout << "DEC   HL" << endl; break;
         case 0x2c: cout << "INC   L" << endl; break;
         case 0x2d: cout << "DEC   L" << endl; break;
-        case 0x2e: cout << "LD    L," << hex(byte()) << endl; break;
+        case 0x2e: cout << "LD    L," << hex(n()) << endl; break;
         case 0x2f: cout << "CPL" << endl; break;
-        case 0x30: cout << "JR    NC," << hex(i8()) << endl; break;
-        case 0x31: cout << "LD    SP," << hex(word()) << endl; break;
+        case 0x30: cout << "JR    NC," << hex(i()) << endl; break;
+        case 0x31: cout << "LD    SP," << hex(nn()) << endl; break;
         case 0x32: cout << "LD    (HL-),A" << endl; break;
         case 0x33: cout << "INC   SP" << endl; break;
         case 0x34: cout << "INC   (HL)" << endl; break;
         case 0x35: cout << "DEC   (HL)" << endl; break;
-        case 0x36: cout << "LD    (HL)," << hex(byte()) << endl; break;
+        case 0x36: cout << "LD    (HL)," << hex(n()) << endl; break;
         case 0x37: cout << "SCF" << endl; break;
-        case 0x38: cout << "JR    C," << hex(i8()) << endl; break;
+        case 0x38: cout << "JR    C," << hex(i()) << endl; break;
         case 0x39: cout << "ADD   HL,SP" << endl; break;
         case 0x3a: cout << "LD    A,(HL-)" << endl; break;
         case 0x3b: cout << "DEC   SP" << endl; break;
         case 0x3c: cout << "INC   A" << endl; break;
         case 0x3d: cout << "DEC   A" << endl; break;
-        case 0x3e: cout << "LD    A," << hex(byte()) << endl; break;
+        case 0x3e: cout << "LD    A," << hex(n()) << endl; break;
         case 0x3f: cout << "CCF" << endl; break;
         case 0x40: cout << "LD    B,B" << endl; break;
         case 0x41: cout << "LD    B,C" << endl; break;
@@ -265,15 +268,15 @@ void Cpu::disassemble_op() {
         case 0xbf: cout << "CP    A" << endl; break;
         case 0xc0: cout << "RET   NZ" << endl; break;
         case 0xc1: cout << "POP   BC" << endl; break;
-        case 0xc2: cout << "JP    NZ," << hex(word()) << endl; break;
-        case 0xc3: cout << "JP    " << hex(word()) << endl; break;
-        case 0xc4: cout << "CALL  NZ," << hex(word()) << endl; break;
+        case 0xc2: cout << "JP    NZ," << hex(nn()) << endl; break;
+        case 0xc3: cout << "JP    " << hex(nn()) << endl; break;
+        case 0xc4: cout << "CALL  NZ," << hex(nn()) << endl; break;
         case 0xc5: cout << "PUSH  BC" << endl; break;
-        case 0xc6: cout << "ADD   A," << hex(byte()) << endl; break;
+        case 0xc6: cout << "ADD   A," << hex(n()) << endl; break;
         case 0xc7: cout << "RST   00H" << endl; break;
         case 0xc8: cout << "RET   Z" << endl; break;
         case 0xc9: cout << "RET" << endl; break;
-        case 0xca: cout << "JP    Z," << hex(word()) << endl; break;
+        case 0xca: cout << "JP    Z," << hex(nn()) << endl; break;
         case 0xcb:
             ++pc;
             switch (mmu.at(pc)) {
@@ -535,57 +538,57 @@ void Cpu::disassemble_op() {
                 case 0xff: cout << "SET   7,A" << endl; break;
             }
             break;
-        case 0xcc: cout << "CALL  Z," << hex(word()) << endl; break;
-        case 0xcd: cout << "CALL  " << hex(word()) << endl; break;
-        case 0xce: cout << "ADC   A," << hex(byte()) << endl; break;
+        case 0xcc: cout << "CALL  Z," << hex(nn()) << endl; break;
+        case 0xcd: cout << "CALL  " << hex(nn()) << endl; break;
+        case 0xce: cout << "ADC   A," << hex(n()) << endl; break;
         case 0xcf: cout << "RST   08H" << endl; break;
         case 0xd0: cout << "RET   NC" << endl; break;
         case 0xd1: cout << "POP   DE" << endl; break;
-        case 0xd2: cout << "JP    NC," << hex(word()) << endl; break;
+        case 0xd2: cout << "JP    NC," << hex(nn()) << endl; break;
         case 0xd3: cout << "undefined" << endl; break;
-        case 0xd4: cout << "CALL  NC," << hex(word()) << endl; break;
+        case 0xd4: cout << "CALL  NC," << hex(nn()) << endl; break;
         case 0xd5: cout << "PUSH  DE" << endl; break;
-        case 0xd6: cout << "SUB   " << hex(byte()) << endl; break;
+        case 0xd6: cout << "SUB   " << hex(n()) << endl; break;
         case 0xd7: cout << "RST   10H" << endl; break;
         case 0xd8: cout << "RET   C" << endl; break;
         case 0xd9: cout << "RETI" << endl; break;
-        case 0xda: cout << "JP    NC," << hex(word()) << endl; break;
+        case 0xda: cout << "JP    NC," << hex(nn()) << endl; break;
         case 0xdb: cout << "undefined" << endl; break;
-        case 0xdc: cout << "CALL  C," << hex(word()) << endl; break;
+        case 0xdc: cout << "CALL  C," << hex(nn()) << endl; break;
         case 0xdd: cout << "undefined" << endl; break;
-        case 0xde: cout << "SBC   A," << hex(byte()) << endl; break;
+        case 0xde: cout << "SBC   A," << hex(n()) << endl; break;
         case 0xdf: cout << "RST   18H" << endl; break;
-        case 0xe0: cout << "LDH   ($00ff+" << hex(byte()) << "),A" << endl; break;
+        case 0xe0: cout << "LDH   ($00ff+" << hex(n()) << "),A" << endl; break;
         case 0xe1: cout << "POP   HL" << endl; break;
         case 0xe2: cout << "LD    ($ff00+C),A" << endl; break;
         case 0xe3: cout << "undefined" << endl; break;
         case 0xe4: cout << "undefined" << endl; break;
         case 0xe5: cout << "PUSH  HL" << endl; break;
-        case 0xe6: cout << "AND   " << hex(byte()) << endl; break;
+        case 0xe6: cout << "AND   " << hex(n()) << endl; break;
         case 0xe7: cout << "RST   20H" << endl; break;
-        case 0xe8: cout << "ADD   SP," << hex(i8()) << endl; break;
+        case 0xe8: cout << "ADD   SP," << hex(i()) << endl; break;
         case 0xe9: cout << "JP    (HL)" << endl; break;
-        case 0xea: cout << "LD    (" << hex(word()) << "),A" << endl; break;
+        case 0xea: cout << "LD    (" << hex(nn()) << "),A" << endl; break;
         case 0xeb: cout << "undefined" << endl; break;
-        case 0xec: cout << "CALL  C," << hex(word()) << endl; break;
+        case 0xec: cout << "CALL  C," << hex(nn()) << endl; break;
         case 0xed: cout << "undefined" << endl; break;
-        case 0xee: cout << "XOR   " << hex(byte()) << endl; break;
+        case 0xee: cout << "XOR   " << hex(n()) << endl; break;
         case 0xef: cout << "RST   28H" << endl; break;
-        case 0xf0: cout << "LDH   A,($ff00+" << hex(byte()) << ")" << endl; break;
+        case 0xf0: cout << "LDH   A,($ff00+" << hex(n()) << ")" << endl; break;
         case 0xf1: cout << "POP   AF" << endl; break;
         case 0xf2: cout << "LD    A,($ff00+C)" << endl; break;
         case 0xf3: cout << "DI" << endl; break;
         case 0xf4: cout << "undefined" << endl; break;
         case 0xf5: cout << "PUSH  AF" << endl; break;
-        case 0xf6: cout << "OR    " << hex(byte()) << endl; break;
+        case 0xf6: cout << "OR    " << hex(n()) << endl; break;
         case 0xf7: cout << "RST   30H" << endl; break;
-        case 0xf8: cout << "LD    HL,SP+" << hex(i8()) << endl; break;
+        case 0xf8: cout << "LD    HL,SP+" << hex(i()) << endl; break;
         case 0xf9: cout << "LD    SP,HL" << endl; break;
-        case 0xfa: cout << "LD    A,(" << hex(word()) << ")" << endl; break;
+        case 0xfa: cout << "LD    A,(" << hex(nn()) << ")" << endl; break;
         case 0xfb: cout << "EI" << endl; break;
         case 0xfc: cout << "undefined" << endl; break;
         case 0xfd: cout << "undefined" << endl; break;
-        case 0xfe: cout << "CP    " << hex(byte()) << endl; break;
+        case 0xfe: cout << "CP    " << hex(n()) << endl; break;
         case 0xff: cout << "RST   38H" << endl; break;
     }
     ++pc;

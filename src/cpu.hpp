@@ -17,11 +17,11 @@ class Cpu {
 
         // Read data from memory
         template <typename T>
-        uint8_t read(T addr) { cycles += 4; return mmu.at(addr); }
+        uint8_t read_mmu(T addr) { cycles += 4; return mmu.at(addr); }
 
         // Write data into memory
-        template <typename T, typename S>
-        void write(T addr, S data) { cycles += 4; mmu.at(addr) = data; }
+        template <typename T> 
+        void write_mmu(T addr, uint8_t data) { cycles += 4; mmu.at(addr) = data; }
 
         // Get immediate data
         uint8_t get_n();
