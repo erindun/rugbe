@@ -1,5 +1,8 @@
+#include <iostream>
 #include <fstream>
 #include <cstdlib>
+#include <memory>
+
 #include "cpu.hpp"
 
 // Initialize CPU

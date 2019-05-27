@@ -1,8 +1,5 @@
 #include <array>
 #include <cstdint>
-#include <fstream>
-#include <iostream>
-#include <memory>
 
 class Cpu {
     private:
