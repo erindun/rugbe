@@ -2,7 +2,7 @@
 
 uint8_t Cpu::get_n() {
     ++pc;
-    return mmu.at(pc);
+    return read(pc);
 }
 
 uint16_t Cpu::get_nn() {
