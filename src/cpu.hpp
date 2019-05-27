@@ -37,8 +37,8 @@ class Cpu {
 
         // load/store/move
         void LD_r_r(uint8_t&, uint8_t);
-        void LD_r_rrp(uint8_t&, uint8_t);
-        void LD_rrp_r(uint8_t&, uint8_t);
+        void LD_r_rrp(uint8_t&, uint16_t);
+        void LD_rrp_r(uint16_t, uint8_t);
         void LD_rr_nn(uint16_t&);
         void LD_nnp_rr(uint16_t);
         void LD_rr_rri(uint16_t, uint16_t);
@@ -47,6 +47,13 @@ class Cpu {
         void PUSH_rr(uint16_t);
 
         // arithmetic
+        void INC_r(uint8_t&);
+        void INC_rrp(uint16_t);
+        void DEC_r(uint8_t&);
+        void DEC_rrp(uint16_t);
+        void ADD_a_r(uint8_t);
+        void SUB_a_r(uint8_t);
+
         void INC_rr(uint16_t&);
         void DEC_rr(uint16_t&);
 };

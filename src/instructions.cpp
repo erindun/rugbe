@@ -30,40 +30,40 @@ inline int8_t Cpu::get_i() {
  ******************************/
 
 
-void Cpu::LD_r_r(uint8_t& x, uint8_t y) {
-    x = y;
+void Cpu::LD_r_r(uint8_t& r1, uint8_t r2) {
+    r1 = r2;
 }
 
-void Cpu::LD_r_rrp(uint8_t& x, uint8_t y) {
-    x = read_mmu(y);
+void Cpu::LD_r_rrp(uint8_t& r, uint16_t addr) {
+    r = read_mmu(addr);
 }
 
-void Cpu::LD_rrp_r(uint8_t& x, uint8_t y) {
-    write_mmu(x, y);
+void Cpu::LD_rrp_r(uint16_t addr, uint8_t r) {
+    write_mmu(addr, r);
 }
 
-void Cpu::LD_rr_nn(uint16_t& x) {
-    x = get_nn();
+void Cpu::LD_rr_nn(uint16_t& rr) {
+    rr = get_nn();
 }
 
 // TODO: check endian-ness
-void Cpu::LD_nnp_rr(uint16_t x) {
-    uint8_t hibyte = x & 0b11110000;
-    uint8_t lobyte = x & 0b00001111;
+void Cpu::LD_nnp_rr(uint16_t rr) {
+    uint8_t hibyte = rr & 0b11110000;
+    uint8_t lobyte = rr & 0b00001111;
 
     write_mmu(get_n(), lobyte);
     write_mmu(get_n(), hibyte);
 }
 
-void Cpu::LD_rr_rri(uint16_t x, uint16_t y) {
-    y += get_i();
-    x = y;
+void Cpu::LD_rr_rri(uint16_t rr1, uint16_t rr2) {
+    rr2 += get_i();
+    rr1 = rr2;
     // TODO set flags
 }
 
 // Takes extra cycle
-void Cpu::LD_rr_rr(uint16_t x, uint16_t y) {
-    x = y;
+void Cpu::LD_rr_rr(uint16_t rr1, uint16_t rr2) {
+    rr1 = rr2;
     cycles += 4;
 }
 
@@ -72,18 +72,18 @@ void Cpu::LD_rr_rr(uint16_t x, uint16_t y) {
 // For the sake of simplicity, the 16-bit register is passed as its
 // two individual 8-bit registers
 // TODO: check endian-ness
-void Cpu::POP_rr(uint8_t x, uint8_t y) {
-    x = read_mmu(sp);
+void Cpu::POP_rr(uint8_t r1, uint8_t r2) {
+    r1 = read_mmu(sp);
     ++sp;
-    y = read_mmu(sp);
+    r2 = read_mmu(sp);
     ++sp;
 }
 
 // Takes extra cycle
 // TODO: check endian-ness
-void Cpu::PUSH_rr(uint16_t x) {
-    uint8_t hibyte = x & 0b11110000;
-    uint8_t lobyte = x & 0b00001111;
+void Cpu::PUSH_rr(uint16_t rr) {
+    uint8_t hibyte = rr & 0b11110000;
+    uint8_t lobyte = rr & 0b00001111;
     --sp;
     write_mmu(sp, hibyte);
     --sp;
@@ -96,11 +96,68 @@ void Cpu::PUSH_rr(uint16_t x) {
  *         arithmetic 
  ******************************/
 
+void Cpu::INC_r(uint8_t& r) {
+    reg.set_nf(0);
+    reg.calc_hf(r, 1);
 
-void Cpu::INC_rr(uint16_t& x) {
-    ++x;
+    ++r;
+
+    reg.calc_zf(r);
 }
 
-void Cpu::DEC_rr(uint16_t& x) {
-    --x;
+void Cpu::INC_rrp(uint16_t addr) {
+    uint8_t val = read_mmu(addr);
+    reg.set_nf(0);
+    reg.calc_hf(val, 1);
+
+    ++val;
+    write_mmu(addr, val);
+
+    reg.calc_zf(val);
+}
+
+void Cpu::DEC_r(uint8_t& r) {
+    reg.set_nf(1);
+    reg.calc_hf(r, 1);
+
+    --r;
+
+    reg.calc_zf(r);
+}
+
+void Cpu::DEC_rrp(uint16_t addr) {
+    uint8_t val = read_mmu(addr);
+    reg.set_nf(1);
+    reg.calc_hf(val, 1);
+
+    --val;
+    write_mmu(addr, val);
+
+    reg.calc_zf(val);
+}
+
+void Cpu::ADD_a_r(uint8_t r) {
+    reg.set_nf(0);
+    reg.calc_hf(reg.a(), r);
+
+    reg.a() += r;
+
+    reg.calc_zf(reg.a());
+}
+
+void Cpu::SUB_a_r(uint8_t r) {
+    reg.set_nf(1);
+    reg.calc_hf(reg.a(), r);
+
+    reg.a() -= r;
+
+    reg.calc_zf(reg.a());
+}
+
+void Cpu::INC_rr(uint16_t& rr) {
+    ++rr;
+}
+
+void Cpu::DEC_rr(uint16_t& rr) {
+    --rr;
 }
