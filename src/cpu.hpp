@@ -1,3 +1,5 @@
+#ifndef CPU_HPP
+#define CPU_HPP
 #include <array>
 #include <cstdint>
 
@@ -11,3 +13,5 @@ class Cpu {
         void disassemble_op();
         void load_rom(const char* filepath);
 };
+
+#endif // CPU_HPP
