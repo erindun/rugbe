@@ -3,6 +3,8 @@
 #include <array>
 #include <cstdint>
 
+#include "registers.hpp"
+
 class Cpu {
     public:
         Cpu();
@@ -12,6 +14,7 @@ class Cpu {
 
     private:
         std::array<uint8_t, 65536> mmu;
+        Registers reg;
         uint16_t pc;
         uint16_t sp;
         int cycles;
