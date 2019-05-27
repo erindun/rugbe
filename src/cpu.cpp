@@ -6,7 +6,7 @@
 #include "cpu.hpp"
 
 // Initialize CPU
-Cpu::Cpu() : pc{0}
+Cpu::Cpu() : pc {0}, sp {0xfffe}, cycles {0}
 {
     mmu.fill(0);
 }
@@ -54,5 +54,6 @@ void Cpu::emulate() {
     switch (opcode) {
         case 0x00: break; // NOP
         case 0x01: break;
+        //case 0x40: LD_r_r([REGISTER B], [REGISTER B]); break;
     }
 }

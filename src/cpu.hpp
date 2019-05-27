@@ -13,6 +13,7 @@ class Cpu {
     private:
         std::array<uint8_t, 65536> mmu;
         uint16_t pc;
+        uint16_t sp;
         int cycles;
 
         // Read data from memory
@@ -36,6 +37,11 @@ class Cpu {
         void LD_r_rrp(uint8_t&, uint8_t);
         void LD_rrp_r(uint8_t&, uint8_t);
         void LD_rr_nn(uint16_t&);
+        void LD_nnp_rr(uint16_t);
+        void LD_rr_rri(uint16_t, uint16_t);
+        void LD_rr_rr(uint16_t, uint16_t);
+        void POP_rr(uint8_t, uint8_t);
+        void PUSH_rr(uint16_t);
 
         // arithmetic
         void INC_rr(uint16_t&);
