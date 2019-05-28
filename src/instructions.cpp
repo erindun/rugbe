@@ -36,7 +36,7 @@ void Cpu::LD_r_x(uint8_t& r1, uint8_t r2) {
     r1 = r2;
 }
 
-void Cpu::LD_rrp_r(uint16_t addr, uint8_t r) {
+void Cpu::LD_rrp_x(uint16_t addr, uint8_t r) {
     write_mmu(addr, r);
 }
 
@@ -269,10 +269,9 @@ void Cpu::JP_nn(bool c) {
     }
 }
 
-// Only takes 4 cycles. TODO: Make sure this is correct, seems odd
+// Only takes 4 cycles.
 void Cpu::JP_hlp() {
-    pc = read_mmu(reg.hl());
-    cycles -= 4;
+    pc = reg.hl();
 }
 
 void Cpu::CALL_nn(bool c) {

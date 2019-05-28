@@ -37,7 +37,7 @@ class Cpu {
 
         // load/store/move
         void LD_r_x(uint8_t&, uint8_t);
-        void LD_rrp_r(uint16_t, uint8_t);
+        void LD_rrp_x(uint16_t, uint8_t);
         void LD_rr_nn(uint16_t&);
         void LD_nnp_rr(uint16_t);
         void LD_rr_rri(uint16_t, uint16_t);
