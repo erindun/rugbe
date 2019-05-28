@@ -48,13 +48,11 @@ void Cpu::load_rom(const char* filepath) {
 }
 
 void Cpu::emulate() {
-    // 4 cycles
-    uint8_t op = read_mmu(pc);
 
     // Print current instruction
     disassemble_op();
 
-    switch (op) {
+    switch (read_mmu(pc)) {
         case 0x00: break; // NOP
         case 0x01: LD_rr_nn(reg.bc()); break;
         case 0x02: LD_xxp_x(reg.bc(), reg.a()); break;
@@ -260,7 +258,7 @@ void Cpu::emulate() {
         case 0xca: JP_nn(reg.get_zf()); break;
         case 0xcb: 
             ++pc;
-            switch (op) {
+            switch (read_mmu(pc)) {
                 case 0x00: RLC_r(reg.b()); break;
                 case 0x01: RLC_r(reg.c()); break;
                 case 0x02: RLC_r(reg.d()); break;
