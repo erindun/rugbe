@@ -87,7 +87,7 @@ void Cpu::emulate() {
         case 0x1f: break; // TODO: RRA
         case 0x20: JR_i(!reg.get_zf()); break;
         case 0x21: LD_rr_nn(reg.hl()); break;
-        case 0x22: LD_xxp_x(reg.hl(), reg.a()); break; // TODO INC
+        case 0x22: LD_xxp_x(reg.hl(), reg.a()); ++reg.hl(); break;
         case 0x23: INC_rr(reg.hl()); break;
         case 0x24: INC_r(reg.h()); break;
         case 0x25: DEC_r(reg.h()); break;
@@ -95,7 +95,7 @@ void Cpu::emulate() {
         case 0x27: break; // TODO: DAA
         case 0x28: JR_i(reg.get_zf()); break;
         case 0x29: ADD_hl_rr(reg.hl()); break;
-        case 0x2a: LD_r_x(reg.a(), read_mmu(reg.hl())); break; // TODO INC
+        case 0x2a: LD_r_x(reg.a(), read_mmu(reg.hl())); ++reg.hl(); break;
         case 0x2b: DEC_rr(reg.hl()); break;
         case 0x2c: INC_r(reg.l()); break;
         case 0x2d: DEC_r(reg.l()); break;
@@ -103,7 +103,7 @@ void Cpu::emulate() {
         case 0x2f: break; // TODO: CPL 
         case 0x30: JR_i(!reg.get_cf());
         case 0x31: LD_rr_nn(sp); break;
-        case 0x32: LD_xxp_x(reg.hl(), reg.a()); break; // TODO DEC
+        case 0x32: --reg.hl(); LD_xxp_x(reg.hl(), reg.a()); break;
         case 0x33: INC_rr(sp); break;
         case 0x34: INC_rrp(reg.hl()); break;
         case 0x35: DEC_rrp(reg.hl()); break;
@@ -111,7 +111,7 @@ void Cpu::emulate() {
         case 0x37: break; // TODO: DAA
         case 0x38: JR_i(reg.get_cf()); break;
         case 0x39: ADD_hl_rr(sp); break;
-        case 0x3a: LD_r_x(reg.a(), read_mmu(reg.hl())); break; // TODO DEC
+        case 0x3a: --reg.hl(); LD_r_x(reg.a(), read_mmu(reg.hl())); break;
         case 0x3b: DEC_rr(sp); break;
         case 0x3c: INC_r(reg.a()); break;
         case 0x3d: DEC_r(reg.a()); break;
