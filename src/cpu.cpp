@@ -101,13 +101,13 @@ void Cpu::emulate() {
         case 0x2d: DEC_r(reg.l()); break;
         case 0x2e: LD_r_x(reg.l(), get_n()); break;
         case 0x2f: break; // TODO: CPL 
-        case 0x30: JR_i(!reg.get_cf());
+        case 0x30: JR_i(!reg.get_cf()); break;
         case 0x31: LD_rr_nn(sp); break;
         case 0x32: --reg.hl(); LD_xxp_x(reg.hl(), reg.a()); break;
         case 0x33: INC_rr(sp); break;
         case 0x34: INC_rrp(reg.hl()); break;
         case 0x35: DEC_rrp(reg.hl()); break;
-        case 0x36: LD_xxp_x(reg.hl(), get_n());
+        case 0x36: LD_xxp_x(reg.hl(), get_n()); break;
         case 0x37: break; // TODO: DAA
         case 0x38: JR_i(reg.get_cf()); break;
         case 0x39: ADD_hl_rr(sp); break;
@@ -562,7 +562,7 @@ void Cpu::emulate() {
         case 0xf6: OR_a_x(get_n()); break;
         case 0xf7: RST_h(30); break;
         case 0xf8: LD_rr_rri(reg.hl(), sp); break;
-        case 0xf9: LD_rr_rr(sp, reg.hl());
+        case 0xf9: LD_rr_rr(sp, reg.hl()); break;
         case 0xfa: LD_r_x(reg.a(), read_mmu(get_nn())); break;
         case 0xfb: break; // TODO: EI
         case 0xfc: break;
