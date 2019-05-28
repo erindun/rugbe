@@ -247,6 +247,41 @@ void Cpu::emulate() {
         case 0xbd: CP_a_x(reg.l()); break;
         case 0xbe: CP_a_x(read_mmu(reg.hl())); break;
         case 0xbf: CP_a_x(reg.a()); break;
+        case 0xc0: RET_c(!reg.get_zf()); break;
+        case 0xc1: POP_xx(reg.b(), reg.c()); break;
+        case 0xc2: JP_nn(!reg.get_zf()); break;
+        case 0xc3: JP_nn(); break;
+        case 0xc4: CALL_nn(!reg.get_zf()); break;
+        case 0xc5: PUSH_xx(reg.bc()); break;
+        case 0xc6: ADD_a_x(get_n()); break;
+        case 0xc7: RST_h(0); break;
+        case 0xc8: RET_c(reg.get_zf()); break;
+        case 0xc9: RET(); break;
+        case 0xca: JP_nn(reg.get_zf()); break;
+        case 0xcb: 
+            ++pc;
+            switch (op) {}
+            break;
+        case 0xcc: CALL_nn(reg.get_zf()); break;
+        case 0xcd: CALL_nn(); break;
+        case 0xce: ADC_a_x(get_n()); break;
+        case 0xcf: RST_h(8); break;
+        case 0xd0: RET_c(!reg.get_cf()); break;
+        case 0xd1: POP_xx(reg.d(), reg.e()); break;
+        case 0xd2: JP_nn(!reg.get_cf()); break;
+        case 0xd3: break;
+        case 0xd4: CALL_nn(!reg.get_cf()); break;
+        case 0xd5: PUSH_xx(reg.de()); break;
+        case 0xd6: SUB_a_x(get_n()); break;
+        case 0xd7: RST_h(10); break;
+        case 0xd8: RET_c(reg.get_cf()); break;
+        case 0xd9: RETI(); break;
+        case 0xda: JP_nn(reg.get_zf()); break;
+        case 0xdb: break;
+        case 0xdc: CALL_nn(reg.get_cf()); break;
+        case 0xdd: break;
+        case 0xde: SBC_a_x(get_n()); break;
+        case 0xdf: RST_h(18); break;
     }
     ++pc;
 }
