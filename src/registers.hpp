@@ -176,8 +176,10 @@ class Registers {
             switch (val) {
                 case 0:
                     reg.r.at(1) &= 0b01111111;
+                    break;
                 case 1:
                     reg.r.at(1) |= 0b10000000;
+                    break;
             }
         }
 
