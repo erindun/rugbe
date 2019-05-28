@@ -85,7 +85,7 @@ void Cpu::emulate() {
         case 0x1d: DEC_r(reg.e()); break;
         case 0x1e: LD_r_x(reg.e(), get_n()); break;
         case 0x1f: break; // TODO: RRA
-        case 0x20: JR_i(!reg.get_zf());
+        case 0x20: JR_i(!reg.get_zf()); break;
         case 0x21: LD_rr_nn(reg.hl()); break;
         case 0x22: LD_xxp_x(reg.hl(), reg.a()); break; // TODO INC
         case 0x23: INC_rr(reg.hl()); break;

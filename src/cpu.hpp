@@ -11,9 +11,9 @@ class Cpu {
         void load_rom(const char* filepath);
         void emulate();
         void disassemble_op();
-        uint16_t pc;
 
     private:
+        uint16_t pc;
         std::array<uint8_t, 65536> mmu;
         Registers reg;
         uint16_t sp;
