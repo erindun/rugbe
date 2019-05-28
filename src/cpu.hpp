@@ -37,11 +37,15 @@ class Cpu {
 
         // load/store/move
         void LD_r_x(uint8_t&, uint8_t);
-        void LD_rrp_x(uint16_t, uint8_t);
+        void LD_xxp_x(uint16_t, uint8_t);
         void LD_rr_nn(uint16_t&);
         void LD_nnp_rr(uint16_t);
         void LD_rr_rri(uint16_t, uint16_t);
         void LD_rr_rr(uint16_t, uint16_t);
+        void LDH_np_a();
+        void LDH_a_np();
+        void LD_cp_a();
+        void LD_a_cp();
         void POP_xx(uint8_t, uint8_t);
         void PUSH_xx(uint16_t);
 
@@ -66,7 +70,7 @@ class Cpu {
         // jumps/calls
         void JR_i(bool c = true);
         void JP_nn(bool c = true);
-        void JP_hlp();
+        void JP_hl();
         void CALL_nn(bool c = true);
         void RET();
         void RETI();

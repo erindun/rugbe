@@ -36,8 +36,8 @@ void Cpu::LD_r_x(uint8_t& r1, uint8_t r2) {
     r1 = r2;
 }
 
-void Cpu::LD_rrp_x(uint16_t addr, uint8_t r) {
-    write_mmu(addr, r);
+void Cpu::LD_xxp_x(uint16_t xx, uint8_t x) {
+    write_mmu(xx, x);
 }
 
 void Cpu::LD_rr_nn(uint16_t& rr) {
@@ -63,6 +63,22 @@ void Cpu::LD_rr_rri(uint16_t rr1, uint16_t rr2) {
 void Cpu::LD_rr_rr(uint16_t rr1, uint16_t rr2) {
     rr1 = rr2;
     cycles += 4;
+}
+
+void Cpu::LDH_np_a() {
+    write_mmu(0xff00 + get_n(), reg.a());
+}
+
+void Cpu::LDH_a_np() {
+    reg.a() =  read_mmu(0xff00 + get_n());
+}
+
+void Cpu::LD_cp_a() {
+    write_mmu(0xff00 + reg.c(), reg.a());
+}
+
+void Cpu::LD_a_cp() {
+    reg.a() = read_mmu(0xff00 + reg.c());
 }
 
 // TODO: make individual (HL-) and (HL+) functions?
@@ -270,7 +286,7 @@ void Cpu::JP_nn(bool c) {
 }
 
 // Only takes 4 cycles.
-void Cpu::JP_hlp() {
+void Cpu::JP_hl() {
     pc = reg.hl();
 }
 
