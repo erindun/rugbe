@@ -454,7 +454,7 @@ void Cpu::RL_r(uint8_t& r) {
     rotate_left(r);
     r += (carry ? 1 : 0);
 
-    reg.set_zf(r);
+    reg.calc_zf(r);
     reg.set_nf(0);
     reg.set_hf(0);
 }
@@ -468,7 +468,7 @@ void Cpu::RL_hlp() {
     rotate_left(hlp);
     hlp += (carry ? 1 : 0);
 
-    reg.set_zf(hlp);
+    reg.calc_zf(hlp);
     reg.set_nf(0);
     reg.set_hf(0);
 
@@ -483,7 +483,7 @@ void Cpu::RR_r(uint8_t& r) {
     rotate_right(r);
     r += (carry ? 1 : 0);
 
-    reg.set_zf(r);
+    reg.calc_zf(r);
     reg.set_nf(0);
     reg.set_hf(0);
 }
@@ -497,7 +497,7 @@ void Cpu::RR_hlp() {
     rotate_right(hlp);
     hlp += (carry ? 1 : 0);
 
-    reg.set_zf(hlp);
+    reg.calc_zf(hlp);
     reg.set_nf(0);
     reg.set_hf(0);
 
@@ -511,7 +511,7 @@ void Cpu::SLA_r(uint8_t& r) {
     r <<= 1;
     
     // Set flags
-    reg.set_zf(r);
+    reg.calc_zf(r);
     reg.set_nf(0);
     reg.set_hf(0);
 }
@@ -524,7 +524,7 @@ void Cpu::SLA_hlp() {
     hlp <<= 1;
     
     // Set flags
-    reg.set_zf(hlp);
+    reg.calc_zf(hlp);
     reg.set_nf(0);
     reg.set_hf(0);
     
@@ -538,7 +538,7 @@ void Cpu::SRA_r(uint8_t& r) {
     r >>= 1;
     
     // Set flags
-    reg.set_zf(r);
+    reg.calc_zf(r);
     reg.set_nf(0);
     reg.set_hf(0);
 }
@@ -551,7 +551,7 @@ void Cpu::SRA_hlp() {
     hlp >>= 1;
     
     // Set flags
-    reg.set_zf(hlp);
+    reg.calc_zf(hlp);
     reg.set_nf(0);
     reg.set_hf(0);
 
@@ -565,7 +565,7 @@ void Cpu::SWAP_r(uint8_t& r) {
     r = (low << 4) | high;
 
     // Set flags
-    reg.set_zf(r);
+    reg.calc_zf(r);
     reg.set_nf(0);
     reg.set_hf(0);
     reg.set_cf(0);
@@ -579,7 +579,7 @@ void Cpu::SWAP_hlp() {
     hlp = (low << 4) | high;
 
     // Set flags
-    reg.set_zf(hlp);
+    reg.calc_zf(hlp);
     reg.set_nf(0);
     reg.set_hf(0);
     reg.set_cf(0);
@@ -595,7 +595,7 @@ void Cpu::SRL_r(uint8_t& r) {
     r >>= 1;
     
     // Set flags
-    reg.set_zf(r);
+    reg.calc_zf(r);
     reg.set_nf(0);
     reg.set_hf(0);
 }
@@ -609,7 +609,7 @@ void Cpu::SRL_hlp() {
     hlp >>= 1;
     
     // Set flags
-    reg.set_zf(hlp);
+    reg.calc_zf(hlp);
     reg.set_nf(0);
     reg.set_hf(0);
 
@@ -646,7 +646,7 @@ void Cpu::BIT_b_r(int bit, uint8_t r) {
     }
 
     // Set flags
-    reg.set_zf(r);
+    reg.calc_zf(r);
     reg.set_nf(0);
     reg.set_hf(0);
 }
@@ -682,7 +682,7 @@ void Cpu::BIT_b_hlp(int bit) {
     }
 
     // Set flags
-    reg.set_zf(hlp);
+    reg.calc_zf(hlp);
     reg.set_nf(0);
     reg.set_hf(0);
     
