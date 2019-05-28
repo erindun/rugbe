@@ -6,6 +6,9 @@ using std::cout;
 using std::endl;
 
 // Helper classes to provide proper hexadecimal formatting
+// This is done specifically for each int type rather than using a template
+// because when using a template, signed ints may output strangely
+// due to sign extension.
 struct U16Helper {
     uint16_t u16;
 
