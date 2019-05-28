@@ -76,6 +76,34 @@ class Cpu {
         void RETI();
         void RET_c(bool);
         void RST_h(int);
+
+        // bit shift
+        void RLCA();
+        void RLA();
+        void RRCA();
+        void RRA();
+        void RLC_r(uint8_t&);
+        void RLC_hlp();
+        void RRC_r(uint8_t&);
+        void RRC_hlp();
+        void RL_r(uint8_t&);
+        void RL_hlp();
+        void RR_r(uint8_t&);
+        void RR_hlp();
+        void SLA_r(uint8_t&);
+        void SLA_hlp();
+        void SRA_r(uint8_t&);
+        void SRA_hlp();
+        void SWAP_r(uint8_t&);
+        void SWAP_hlp();
+        void SRL_r(uint8_t&);
+        void SRL_hlp();
+        void BIT_b_r(int, uint8_t);
+        void BIT_b_hlp(int);
+        void RES_b_r(int, uint8_t);
+        void RES_b_hlp(int);
+        void SET_b_r(int, uint8_t);
+        void SET_b_hlp(int);
 };
 
 #endif // CPU_HPP

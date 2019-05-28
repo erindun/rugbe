@@ -337,3 +337,546 @@ void Cpu::RST_h(int h) {
     PUSH_xx(pc);
     pc = h;
 }
+
+
+/*************************
+ *      bit shift
+ *************************/
+
+
+// Rotate bits
+inline void rotate_left(uint8_t& r) { r = (r << 1) | (r >> 7); }
+inline void rotate_right(uint8_t& r) { r = (r >> 1) | (r << 7); }
+
+// Rotate A left, store old bit 7 in CF. Reset ZF, NF, HF to 0
+void Cpu::RLCA() {  
+    reg.set_cf(reg.a() & 0b01000000);
+    rotate_left(reg.a());
+
+    reg.set_zf(0);
+    reg.set_nf(0);
+    reg.set_hf(0);
+}
+
+// Rotate A left through carry
+void Cpu::RLA() {
+    bool carry = reg.get_cf();
+    reg.set_cf(reg.a() & 0b01000000);
+
+    rotate_left(reg.a());
+    reg.a() += (carry ? 1 : 0);
+
+    reg.set_zf(0);
+    reg.set_nf(0);
+    reg.set_hf(0);
+}
+
+// Rotate A right, store old bit 0 in CF. Reset ZF, NF, HF to 0
+void Cpu::RRCA() {
+    reg.set_cf(reg.a() & 0b00000001);
+    rotate_left(reg.a());
+
+    reg.set_zf(0);
+    reg.set_nf(0);
+    reg.set_hf(0);
+}
+
+// Rotate A right through carry
+void Cpu::RRA() {
+    bool carry = reg.get_cf();
+    reg.set_cf(reg.a() & 0b00000001);
+
+    rotate_right(reg.a());
+    reg.a() += (carry ? 1 : 0);
+
+    reg.set_zf(0);
+    reg.set_nf(0);
+    reg.set_hf(0);
+}
+
+// Rotate u8 left, store old bit 7 in CF. Set ZF, reset NF and HF to 0
+void Cpu::RLC_r(uint8_t& r) {
+    reg.set_cf(r & 0b01000000);
+    rotate_left(r);
+
+    // Set flags
+    reg.calc_zf(r);
+    reg.set_nf(0);
+    reg.set_hf(0);
+}
+
+// Rotate (HL) left, store old bit 7 in CF. Set ZF, reset NF and HF to 0
+void Cpu::RLC_hlp() {
+    uint8_t hlp = read_mmu(reg.hl());
+
+    reg.set_cf(hlp & 0b01000000);
+    rotate_left(hlp);
+
+    // Set flags
+    reg.calc_zf(hlp);
+    reg.set_nf(0);
+    reg.set_hf(0);
+
+    cycles += 4;
+}   
+
+// Rotate r right, store old bit 0 in CF. Set ZF, reset NF and HF to 0
+void Cpu::RRC_r(uint8_t& r) {
+    reg.set_cf(r & 0b00000001);
+    rotate_right(r);
+
+    // Set flags
+    reg.calc_zf(r);
+    reg.set_nf(0);
+    reg.set_hf(0);
+}
+
+// Rotate (HL) right, store old bit 0 in CF. Set ZF, reset NF and HF to 0
+void Cpu::RRC_hlp() {
+    uint8_t hlp = read_mmu(reg.hl());
+
+    reg.set_cf(hlp & 0b00000001);
+    rotate_left(hlp);
+
+    // Set flags
+    reg.calc_zf(hlp);
+    reg.set_nf(0);
+    reg.set_hf(0);
+
+    cycles += 4;
+}   
+
+// Rotate r left through carry
+void Cpu::RL_r(uint8_t& r) {
+    bool carry = reg.get_cf();
+    reg.set_cf(r & 0b01000000);
+
+    rotate_left(r);
+    r += (carry ? 1 : 0);
+
+    reg.set_zf(r);
+    reg.set_nf(0);
+    reg.set_hf(0);
+}
+
+// Rotate (HL) left through carry
+void Cpu::RL_hlp() {
+    uint8_t hlp = read_mmu(reg.hl());
+    bool carry = reg.get_cf();
+    reg.set_cf(hlp & 0b01000000);
+
+    rotate_left(hlp);
+    hlp += (carry ? 1 : 0);
+
+    reg.set_zf(hlp);
+    reg.set_nf(0);
+    reg.set_hf(0);
+
+    cycles += 4;
+}
+
+// Rotate r right through carry
+void Cpu::RR_r(uint8_t& r) {
+    bool carry = reg.get_cf();
+    reg.set_cf(r & 0b00000001);
+
+    rotate_right(r);
+    r += (carry ? 1 : 0);
+
+    reg.set_zf(r);
+    reg.set_nf(0);
+    reg.set_hf(0);
+}
+
+// Rotate (HL) right through carry
+void Cpu::RR_hlp() {
+    uint8_t hlp = read_mmu(reg.hl());
+    bool carry = reg.get_cf();
+    reg.set_cf(hlp & 0b00000001);
+
+    rotate_right(hlp);
+    hlp += (carry ? 1 : 0);
+
+    reg.set_zf(hlp);
+    reg.set_nf(0);
+    reg.set_hf(0);
+
+    cycles += 4;
+}
+
+// Shift r left. Bit 7 becomes CF
+void Cpu::SLA_r(uint8_t& r) {
+    reg.set_cf(r & 0b01000000);
+
+    r <<= 1;
+    
+    // Set flags
+    reg.set_zf(r);
+    reg.set_nf(0);
+    reg.set_hf(0);
+}
+
+// Shift r left. Bit 7 becomes CF
+void Cpu::SLA_hlp() {
+    uint8_t hlp = read_mmu(reg.hl());
+    reg.set_cf(hlp & 0b01000000);
+
+    hlp <<= 1;
+    
+    // Set flags
+    reg.set_zf(hlp);
+    reg.set_nf(0);
+    reg.set_hf(0);
+    
+    cycles += 4;
+}
+
+// Shift u8 right. Bit 0 becomes CF
+void Cpu::SRA_r(uint8_t& r) {
+    reg.set_cf(r & 0b00000001);
+
+    r >>= 1;
+    
+    // Set flags
+    reg.set_zf(r);
+    reg.set_nf(0);
+    reg.set_hf(0);
+}
+
+// Shift u8 right. Bit 0 becomes CF
+void Cpu::SRA_hlp() {
+    uint8_t hlp = read_mmu(reg.hl());
+    reg.set_cf(hlp & 0b00000001);
+
+    hlp >>= 1;
+    
+    // Set flags
+    reg.set_zf(hlp);
+    reg.set_nf(0);
+    reg.set_hf(0);
+
+    cycles += 4;
+}
+
+// Swap nibbles (e.g. byte 11110000 becomes 00001111)
+void Cpu::SWAP_r(uint8_t& r) {
+    uint8_t low = r & 0b00001111;
+    uint8_t high = (r >> 4) & 0b00001111;
+    r = (low << 4) | high;
+
+    // Set flags
+    reg.set_zf(r);
+    reg.set_nf(0);
+    reg.set_hf(0);
+    reg.set_cf(0);
+}
+
+// Swap nibbles (e.g. byte 11110000 becomes 00001111)
+void Cpu::SWAP_hlp() {
+    uint8_t hlp = read_mmu(reg.hl());
+    uint8_t low = hlp & 0b00001111;
+    uint8_t high = (hlp >> 4) & 0b00001111;
+    hlp = (low << 4) | high;
+
+    // Set flags
+    reg.set_zf(hlp);
+    reg.set_nf(0);
+    reg.set_hf(0);
+    reg.set_cf(0);
+
+    cycles += 4;
+}
+
+// Shift u8 right. Bit 0 becomes CF
+// TODO
+void Cpu::SRL_r(uint8_t& r) {
+    reg.set_cf(r & 0b00000001);
+
+    r >>= 1;
+    
+    // Set flags
+    reg.set_zf(r);
+    reg.set_nf(0);
+    reg.set_hf(0);
+}
+
+// Shift u8 right. Bit 0 becomes CF
+// TODO
+void Cpu::SRL_hlp() {
+    uint8_t hlp = read_mmu(reg.hl());
+    reg.set_cf(hlp & 0b00000001);
+
+    hlp >>= 1;
+    
+    // Set flags
+    reg.set_zf(hlp);
+    reg.set_nf(0);
+    reg.set_hf(0);
+
+    cycles += 4;
+}
+
+// Test bit N of u8 and set ZF accordingly
+void Cpu::BIT_b_r(int bit, uint8_t r) {
+    switch (bit) {
+        case 0:
+            r &= 0b00000001;
+            break;
+        case 1:
+            r &= 0b00000010;
+            break;
+        case 2:
+            r &= 0b00000100;
+            break;
+        case 3:
+            r &= 0b00001000;
+            break;
+        case 4:
+            r &= 0b00010000;
+            break;
+        case 5:
+            r &= 0b00100000;
+            break;
+        case 6:
+            r &= 0b01000000;
+            break;
+        case 7:
+            r &= 0b10000000;
+            break;
+    }
+
+    // Set flags
+    reg.set_zf(r);
+    reg.set_nf(0);
+    reg.set_hf(0);
+}
+
+// Test bit N of u8 and set ZF accordingly
+void Cpu::BIT_b_hlp(int bit) {
+    uint8_t hlp = read_mmu(reg.hl());
+    switch (bit) {
+        case 0:
+            hlp &= 0b00000001;
+            break;
+        case 1:
+            hlp &= 0b00000010;
+            break;
+        case 2:
+            hlp &= 0b00000100;
+            break;
+        case 3:
+            hlp &= 0b00001000;
+            break;
+        case 4:
+            hlp &= 0b00010000;
+            break;
+        case 5:
+            hlp &= 0b00100000;
+            break;
+        case 6:
+            hlp &= 0b01000000;
+            break;
+        case 7:
+            hlp &= 0b10000000;
+            break;
+    }
+
+    // Set flags
+    reg.set_zf(hlp);
+    reg.set_nf(0);
+    reg.set_hf(0);
+    
+    cycles += 4;
+}
+
+// Reset bit N of u8
+void Cpu::RES_b_r(int bit, uint8_t r) {
+    switch (bit) {
+        case 0:
+            if ((r & 0b00000001) == 1) {
+                r -= 0b00000001;
+            }
+            break;
+        case 1:
+            if ((r & 0b00000010) == 1) {
+                r -= 0b00000010;
+            }
+            break;
+        case 2:
+            if ((r & 0b00000100) == 1) {
+                r -= 0b00000100;
+            }
+            break;
+        case 3:
+            if ((r & 0b00001000) == 1) {
+                r -= 0b00001000;
+            }
+            break;
+        case 4:
+            if ((r & 0b00010000) == 1) {
+                r -= 0b00010000;
+            }
+            break;
+        case 5:
+            if ((r & 0b00100000) == 1) {
+                r -= 0b00100000;
+            }
+            break;
+        case 6:
+            if ((r & 0b01000000) == 1) {
+                r -= 0b01000000;
+            }
+            break;
+        case 7:
+            if ((r & 0b10000000) == 1) {
+                r -= 0b10000000;
+            }
+            break;
+    }
+}
+
+// Reset bit N of u8
+void Cpu::RES_b_hlp(int bit) {
+    uint8_t hlp = read_mmu(reg.hl());
+
+    switch (bit) {
+        case 0:
+            if ((hlp & 0b00000001) == 1) {
+                hlp -= 0b00000001;
+            }
+            break;
+        case 1:
+            if ((hlp & 0b00000010) == 1) {
+                hlp -= 0b00000010;
+            }
+            break;
+        case 2:
+            if ((hlp & 0b00000100) == 1) {
+                hlp -= 0b00000100;
+            }
+            break;
+        case 3:
+            if ((hlp & 0b00001000) == 1) {
+                hlp -= 0b00001000;
+            }
+            break;
+        case 4:
+            if ((hlp & 0b00010000) == 1) {
+                hlp -= 0b00010000;
+            }
+            break;
+        case 5:
+            if ((hlp & 0b00100000) == 1) {
+                hlp -= 0b00100000;
+            }
+            break;
+        case 6:
+            if ((hlp & 0b01000000) == 1) {
+                hlp -= 0b01000000;
+            }
+            break;
+        case 7:
+            if ((hlp & 0b10000000) == 1) {
+                hlp -= 0b10000000;
+            }
+            break;
+    }
+
+    cycles += 4;
+}
+
+// Set bit N of u8
+void Cpu::SET_b_r(int bit, uint8_t r) {
+    switch (bit) {
+        case 0:
+            if ((r & 0b00000001) == 0) {
+                r += 0b00000001;
+            }
+            break;
+        case 1:
+            if ((r & 0b00000010) == 0) {
+                r += 0b00000010;
+            }
+            break;
+        case 2:
+            if ((r & 0b00000100) == 0) {
+                r += 0b00000100;
+            }
+            break;
+        case 3:
+            if ((r & 0b00001000) == 0) {
+                r += 0b00001000;
+            }
+            break;
+        case 4:
+            if ((r & 0b00010000) == 0) {
+                r += 0b00010000;
+            }
+            break;
+        case 5:
+            if ((r & 0b00100000) == 0) {
+                r += 0b00100000;
+            }
+            break;
+        case 6:
+            if ((r & 0b01000000) == 0) {
+                r += 0b01000000;
+            }
+            break;
+        case 7:
+            if ((r & 0b10000000) == 0) {
+                r += 0b10000000;
+            }
+            break;
+    }
+}
+
+// Set bit N of u8
+void Cpu::SET_b_hlp(int bit) {
+    uint8_t hlp = read_mmu(reg.hl());
+
+    switch (bit) {
+        case 0:
+            if ((hlp & 0b00000001) == 0) {
+                hlp += 0b00000001;
+            }
+            break;
+        case 1:
+            if ((hlp & 0b00000010) == 0) {
+                hlp += 0b00000010;
+            }
+            break;
+        case 2:
+            if ((hlp & 0b00000100) == 0) {
+                hlp += 0b00000100;
+            }
+            break;
+        case 3:
+            if ((hlp & 0b00001000) == 0) {
+                hlp += 0b00001000;
+            }
+            break;
+        case 4:
+            if ((hlp & 0b00010000) == 0) {
+                hlp += 0b00010000;
+            }
+            break;
+        case 5:
+            if ((hlp & 0b00100000) == 0) {
+                hlp += 0b00100000;
+            }
+            break;
+        case 6:
+            if ((hlp & 0b01000000) == 0) {
+                hlp += 0b01000000;
+            }
+            break;
+        case 7:
+            if ((hlp & 0b10000000) == 0) {
+                hlp += 0b10000000;
+            }
+            break;
+    }
+    
+    cycles += 4;
+}
