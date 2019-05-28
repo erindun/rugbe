@@ -83,8 +83,10 @@ class Registers {
             switch (val) {
                 case 0:
                     reg.r.at(1) &= 0b11101111;
+                    break;
                 case 1:
                     reg.r.at(1) |= 0b00010000;
+                    break;
             }
         }
 
@@ -119,8 +121,10 @@ class Registers {
             switch (val) {
                 case 0:
                     reg.r.at(1) &= 0b11011111;
+                    break;
                 case 1:
                     reg.r.at(1) |= 0b00100000;
+                    break;
             }
         }
 
@@ -155,8 +159,10 @@ class Registers {
             switch (val) {
                 case 0:
                     reg.r.at(1) &= 0b10111111;
+                    break;
                 case 1:
                     reg.r.at(1) |= 0b01000000;
+                    break;
             }
         }
 
