@@ -54,14 +54,13 @@ void Cpu::disassemble_op() {
 
     // Get the next byte in memory
     auto n = [=]() -> uint8_t {
-        ++pc;
-        return mmu.at(pc);
+        return mmu.at(pc + 1);
     };
 
     // Get the next word in memory
     auto nn = [=]() -> uint16_t {
-        uint16_t b = n() << 0;
-        return b | n() << 8;
+        uint16_t b = mmu.at(pc + 1);
+        return b | (mmu.at(pc + 2) << 8);
     };
 
     // Get the next byte and turn it into a signed int
@@ -278,8 +277,7 @@ void Cpu::disassemble_op() {
         case 0xc9: cout << "RET" << endl; break;
         case 0xca: cout << "JP    Z," << hex(nn()) << endl; break;
         case 0xcb:
-            ++pc;
-            switch (mmu.at(pc)) {
+            switch (mmu.at(pc + 1)) {
                 case 0x00: cout << "RLC   B" << endl; break;
                 case 0x01: cout << "RLC   C" << endl; break;
                 case 0x02: cout << "RLC   D" << endl; break;
@@ -591,5 +589,4 @@ void Cpu::disassemble_op() {
         case 0xfe: cout << "CP    " << hex(n()) << endl; break;
         case 0xff: cout << "RST   38H" << endl; break;
     }
-    ++pc;
 }   

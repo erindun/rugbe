@@ -49,11 +49,15 @@ void Cpu::load_rom(const char* filepath) {
 
 void Cpu::emulate() {
     // 4 cycles
-    uint8_t opcode = read_mmu(pc);
+    uint8_t op = read_mmu(pc);
 
-    switch (opcode) {
+    // Print current instruction
+    disassemble_op();
+
+    switch (op) {
         case 0x00: break; // NOP
         case 0x01: break;
+        case 0x31: LD_rr_nn(sp); break;
         case 0x40: LD_r_x(reg.b(), reg.b()); break;
         case 0x41: LD_r_x(reg.b(), reg.c()); break;
         case 0x42: LD_r_x(reg.b(), reg.d()); break;
@@ -183,4 +187,5 @@ void Cpu::emulate() {
         case 0xbe: CP_a_x(read_mmu(reg.hl())); break;
         case 0xbf: CP_a_x(reg.a()); break;
     }
+    ++pc;
 }
