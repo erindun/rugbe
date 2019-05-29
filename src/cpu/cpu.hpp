@@ -4,7 +4,7 @@
 #include <cstdint>
 
 #include "registers.hpp"
-#include "mmu/mmu.hpp"
+#include "../mmu/mmu.hpp"
 
 class Cpu {
     public:

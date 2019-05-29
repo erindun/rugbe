@@ -1,7 +1,8 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
-#include "cpu.hpp"
+#include "mmu/mmu.hpp"
+#include "cpu/cpu.hpp"
 
 int main(int argc, char** argv) {
     // Initialize components
