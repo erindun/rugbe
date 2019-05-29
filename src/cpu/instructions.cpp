@@ -280,7 +280,10 @@ void Cpu::JR_i(bool c) {
     int8_t i = get_i();
 
     if (c) {
+        ++pc;
         pc += i;
+        increment_pc = false;
+
         cycles += 4;
     }
 }
@@ -292,6 +295,7 @@ void Cpu::JP_nn(bool c) {
 
     if (c) {
         pc = nn;
+        increment_pc = false;
         cycles += 4;
     }
 }
@@ -299,6 +303,7 @@ void Cpu::JP_nn(bool c) {
 // Only takes 4 cycles.
 void Cpu::JP_hl() {
     pc = reg.hl();
+    increment_pc = false;
 }
 
 void Cpu::CALL_nn(bool c) {
@@ -307,8 +312,10 @@ void Cpu::CALL_nn(bool c) {
     if (c) {
         uint8_t lowpc = pc & 0xff;
         uint8_t highpc = (pc >> 8) & 0xff;
+        ++pc;
         push(lowpc, highpc);
         pc = nn;
+        increment_pc = false;
     }
 }
 
@@ -318,6 +325,7 @@ void Cpu::RET() {
     uint8_t highpc;
     pop(lowpc, highpc);
     pc = construct_word(lowpc, highpc);
+    increment_pc = false;
     cycles += 4;
 }
 
@@ -346,6 +354,7 @@ void Cpu::RST_h(int h) {
     uint8_t highpc = (pc >> 8) & 0xff;
     push(lowpc, highpc);
     pc = h;
+    increment_pc = false;
 
     cycles += 4;
 }

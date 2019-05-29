@@ -9,6 +9,8 @@
 Cpu::Cpu(Mmu* mmu) : mmu {mmu}, pc {0}, sp {0xfffe}, cycles {0} {}
 
 void Cpu::emulate() {
+    // Increment PC by default. Some Instructions may set this to false.
+    increment_pc = true;
 
     // Print current instruction
     disassemble_op();
@@ -531,5 +533,5 @@ void Cpu::emulate() {
         case 0xfe: CP_a_x(get_n()); break;
         case 0xff: RST_h(38); break;
     }
-    ++pc;
+    if (increment_pc) ++pc;
 }

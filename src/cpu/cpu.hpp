@@ -16,6 +16,7 @@ class Cpu {
     private:
         Mmu* mmu;
         uint16_t pc;
+        bool increment_pc;
         Registers reg;
         uint16_t sp;
         int cycles;
