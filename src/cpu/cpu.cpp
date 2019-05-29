@@ -1,8 +1,5 @@
-#include <iostream>
-#include <fstream>
-#include <cstdlib>
-#include <memory>
-
+#include <iostream> // DEBUG
+#include <iomanip> // DEBUG
 #include "cpu.hpp"
 
 // Initialize CPU
@@ -14,7 +11,7 @@ void Cpu::emulate() {
 
     // Print current instruction
     disassemble_op();
-    std::cout << "Reg A: " << std::hex << (int)reg.a() << std::endl;
+    std::cout << "Reg A: $" << std::setw(4) << std::setfill('0') << std::hex << (int)reg.a() << std::endl;
 
     switch (read_mmu(pc)) {
         case 0x00: break; // NOP
@@ -27,7 +24,7 @@ void Cpu::emulate() {
         case 0x07: RLCA(); break;
         case 0x08: LD_nnp_rr(sp); break;
         case 0x09: ADD_hl_rr(reg.bc()); break;
-        case 0x0a: LD_r_x(reg.a(), read_mmu(reg.bc())); break;
+        case 0x0a: LD_r_x(reg.a(), get_hlp()); break;
         case 0x0b: DEC_rr(reg.bc()); break;
         case 0x0c: INC_r(reg.c()); break;
         case 0x0d: DEC_r(reg.c()); break;

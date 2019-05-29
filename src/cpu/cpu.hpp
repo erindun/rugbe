@@ -29,10 +29,28 @@ class Cpu {
         template <typename T> 
         void write_mmu(T addr, uint8_t data) { cycles += 4; mmu->at(addr) = data; }
 
-        // Get immediate data
-        uint8_t get_n();
-        uint16_t get_nn();
-        int8_t get_i();
+        // Get immediate 8-bit data
+        inline uint8_t get_n() {
+            ++pc;
+            return read_mmu(pc);
+        }
+
+        // Get immediate 16-bit data
+        inline uint16_t get_nn() {
+            uint16_t lowbyte = get_n();
+            uint16_t highbyte = get_n() << 8;
+            return highbyte | lowbyte; 
+        }
+
+        // Get immediate 8-bit signed data
+        inline int8_t get_i() {
+            return static_cast<int8_t>(get_n());
+        }
+
+        // Get (HL)
+        inline uint8_t get_hlp() {
+            return read_mmu(reg.hl());
+        }
 
         // Push/pop values to stack
         void push(uint8_t, uint8_t);

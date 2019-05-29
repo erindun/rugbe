@@ -1,22 +1,6 @@
 #include "cpu.hpp"
 #include <iostream>
 
-
-inline uint8_t Cpu::get_n() {
-    ++pc;
-    return read_mmu(pc);
-}
-
-inline uint16_t Cpu::get_nn() {
-    uint16_t lowbyte = get_n();
-    uint16_t highbyte = get_n() << 8;
-    return highbyte | lowbyte; 
-}
-
-inline int8_t Cpu::get_i() {
-    return static_cast<int8_t>(get_n());
-}
-
 inline void Cpu::push(uint8_t x, uint8_t y) {
     --sp;
     write_mmu(sp, x);
@@ -344,11 +328,9 @@ void Cpu::CALL_nn(bool c) {
 
 // Takes 16 cycles
 void Cpu::RET() {
-    uint8_t lowpc = 0;
-    uint8_t highpc = 0;
+    uint8_t lowpc = 0, highpc = 0;
     pop(lowpc, highpc);
-    pc = construct_word(lowpc, highpc);
-    std::cout << "PC: " << std::hex << (int)pc << std::endl;
+    pc = (highpc << 8) | lowpc;
     increment_pc = false;
     cycles += 4;
 }
@@ -356,10 +338,10 @@ void Cpu::RET() {
 // Takes 16 cycles
 // TODO: Add interrupt support
 void Cpu::RETI() {
-    uint8_t lowpc = 0;
-    uint8_t highpc = 0;
+    uint8_t lowpc = 0, highpc = 0;
     pop(lowpc, highpc);
-    pc = construct_word(lowpc, highpc);
+    pc = (highpc << 8) | lowpc;
+    increment_pc = false;
     cycles += 4;
 }
 
@@ -448,7 +430,7 @@ void Cpu::RLC_r(uint8_t& r) {
 
 // Rotate (HL) left, store old bit 7 in CF. Set ZF, reset NF and HF to 0
 void Cpu::RLC_hlp() {
-    uint8_t hlp = read_mmu(reg.hl());
+    uint8_t hlp = get_hlp();
 
     reg.set_cf((reg.a() & 0b10000000) >> 7);
     rotate_left(hlp);
@@ -474,7 +456,7 @@ void Cpu::RRC_r(uint8_t& r) {
 
 // Rotate (HL) right, store old bit 0 in CF. Set ZF, reset NF and HF to 0
 void Cpu::RRC_hlp() {
-    uint8_t hlp = read_mmu(reg.hl());
+    uint8_t hlp = get_hlp();
 
     reg.set_cf(hlp & 0b00000001);
     rotate_left(hlp);
@@ -502,7 +484,7 @@ void Cpu::RL_r(uint8_t& r) {
 
 // Rotate (HL) left through carry
 void Cpu::RL_hlp() {
-    uint8_t hlp = read_mmu(reg.hl());
+    uint8_t hlp = get_hlp();
     bool carry = reg.get_cf();
     reg.set_cf((reg.a() & 0b10000000) >> 7);
 
@@ -531,7 +513,7 @@ void Cpu::RR_r(uint8_t& r) {
 
 // Rotate (HL) right through carry
 void Cpu::RR_hlp() {
-    uint8_t hlp = read_mmu(reg.hl());
+    uint8_t hlp = get_hlp();
     bool carry = reg.get_cf();
     reg.set_cf(hlp & 0b00000001);
 
@@ -559,7 +541,7 @@ void Cpu::SLA_r(uint8_t& r) {
 
 // Shift r left. Bit 7 becomes CF
 void Cpu::SLA_hlp() {
-    uint8_t hlp = read_mmu(reg.hl());
+    uint8_t hlp = get_hlp();
     reg.set_cf((reg.a() & 0b10000000) >> 7);
 
     hlp <<= 1;
@@ -586,7 +568,7 @@ void Cpu::SRA_r(uint8_t& r) {
 
 // Shift u8 right. Bit 0 becomes CF
 void Cpu::SRA_hlp() {
-    uint8_t hlp = read_mmu(reg.hl());
+    uint8_t hlp = get_hlp();
     reg.set_cf(hlp & 0b00000001);
 
     hlp >>= 1;
@@ -614,7 +596,7 @@ void Cpu::SWAP_r(uint8_t& r) {
 
 // Swap nibbles (e.g. byte 11110000 becomes 00001111)
 void Cpu::SWAP_hlp() {
-    uint8_t hlp = read_mmu(reg.hl());
+    uint8_t hlp = get_hlp();
     uint8_t low = hlp & 0b00001111;
     uint8_t high = (hlp & 0b11110000) >> 4;
     hlp = (low << 4) | high;
@@ -644,7 +626,7 @@ void Cpu::SRL_r(uint8_t& r) {
 // Shift u8 right. Bit 0 becomes CF
 // TODO
 void Cpu::SRL_hlp() {
-    uint8_t hlp = read_mmu(reg.hl());
+    uint8_t hlp = get_hlp();
     reg.set_cf(hlp & 0b00000001);
 
     hlp >>= 1;
@@ -694,7 +676,7 @@ void Cpu::BIT_b_r(int bit, uint8_t r) {
 
 // Test bit N of u8 and set ZF accordingly
 void Cpu::BIT_b_hlp(int bit) {
-    uint8_t hlp = read_mmu(reg.hl());
+    uint8_t hlp = get_hlp();
     switch (bit) {
         case 0:
             hlp &= 0b00000001;
@@ -778,7 +760,7 @@ void Cpu::RES_b_r(int bit, uint8_t r) {
 
 // Reset bit N of u8
 void Cpu::RES_b_hlp(int bit) {
-    uint8_t hlp = read_mmu(reg.hl());
+    uint8_t hlp = get_hlp();
 
     switch (bit) {
         case 0:
@@ -874,7 +856,7 @@ void Cpu::SET_b_r(int bit, uint8_t r) {
 
 // Set bit N of u8
 void Cpu::SET_b_hlp(int bit) {
-    uint8_t hlp = read_mmu(reg.hl());
+    uint8_t hlp = get_hlp();
 
     switch (bit) {
         case 0:
