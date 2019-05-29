@@ -77,9 +77,14 @@ void Cpu::LD_nnp_rr(uint16_t rr) {
 }
 
 void Cpu::LD_rr_rri(uint16_t rr1, uint16_t rr2) {
-    rr2 += get_i();
+    int8_t i = get_i();
+    reg.set_zf(0);
+    reg.set_nf(0);
+    reg.calc_hf(rr2, i);
+    reg.calc_cf(rr2, i);
+
+    rr2 += i;
     rr1 = rr2;
-    // TODO set flags
 }
 
 // Takes extra cycle
@@ -328,7 +333,6 @@ void Cpu::CALL_nn(bool c) {
     uint16_t nn = get_nn();
 
     if (c) {
-        // TODO something weird going on here
         ++pc;
         uint8_t lowpc = pc & 0xff;
         uint8_t highpc = (pc >> 8) & 0xff;
