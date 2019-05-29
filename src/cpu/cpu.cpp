@@ -7,10 +7,9 @@ void Cpu::emulate() {
     // Increment PC by default. Some instructions may set this to false.
     increment_pc = true;
 
-    // Print current instruction
-    disassemble_op();
+    uint8_t op = read_mmu(pc);
 
-    switch (read_mmu(pc)) {
+    switch (op) {
         case 0x00: break; // NOP
         case 0x01: LD_rr_nn(reg.bc()); break;
         case 0x02: LD_xxp_x(reg.bc(), reg.a()); break;
@@ -216,7 +215,8 @@ void Cpu::emulate() {
         case 0xca: JP_nn(reg.get_zf()); break;
         case 0xcb: 
             ++pc;
-            switch (read_mmu(pc)) {
+            op = read_mmu(pc);
+            switch (op) {
                 case 0x00: RLC_r(reg.b()); break;
                 case 0x01: RLC_r(reg.c()); break;
                 case 0x02: RLC_r(reg.d()); break;
