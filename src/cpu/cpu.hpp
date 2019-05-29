@@ -35,8 +35,8 @@ class Cpu {
         int8_t get_i();
 
         // Push/pop values to stack
-        void push(uint8_t x, uint8_t y);
-        void pop(uint8_t x, uint8_t y);
+        void push(uint8_t, uint8_t);
+        void pop(uint8_t&, uint8_t&);
 
 
         // Instructions

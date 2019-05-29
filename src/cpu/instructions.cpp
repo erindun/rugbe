@@ -1,4 +1,5 @@
 #include "cpu.hpp"
+#include <iostream>
 
 
 inline uint8_t Cpu::get_n() {
@@ -16,17 +17,23 @@ inline int8_t Cpu::get_i() {
     return static_cast<int8_t>(get_n());
 }
 
+// FIXME
 inline void Cpu::push(uint8_t x, uint8_t y) {
     --sp;
     write_mmu(sp, x);
+    std::cout << "pushed: " << std::hex << (int)x << std::endl;
     --sp;
     write_mmu(sp, y);
+    std::cout << "pushed: " << std::hex << (int)y << std::endl;
 }
 
-inline void Cpu::pop(uint8_t x, uint8_t y) {
+// FIXME
+inline void Cpu::pop(uint8_t& x, uint8_t& y) {
     y = read_mmu(sp);
+    std::cout << "popped: " << std::hex << (int)y << std::endl;
     ++sp;
     x = read_mmu(sp);
+    std::cout << "popped: " << std::hex << (int)x << std::endl;
     ++sp;
 }
 
@@ -311,6 +318,7 @@ void Cpu::CALL_nn(bool c) {
     uint16_t nn = get_nn();
 
     if (c) {
+        // TODO something weird going on here
         ++pc;
         uint8_t lowpc = pc & 0xff;
         uint8_t highpc = (pc >> 8) & 0xff;
@@ -322,10 +330,11 @@ void Cpu::CALL_nn(bool c) {
 
 // Takes 16 cycles
 void Cpu::RET() {
-    uint8_t lowpc;
-    uint8_t highpc;
+    uint8_t lowpc = 0;
+    uint8_t highpc = 0;
     pop(lowpc, highpc);
     pc = construct_word(lowpc, highpc);
+    std::cout << "PC: " << std::hex << (int)pc << std::endl;
     increment_pc = false;
     cycles += 4;
 }
@@ -333,8 +342,8 @@ void Cpu::RET() {
 // Takes 16 cycles
 // TODO: Add interrupt support
 void Cpu::RETI() {
-    uint8_t lowpc;
-    uint8_t highpc;
+    uint8_t lowpc = 0;
+    uint8_t highpc = 0;
     pop(lowpc, highpc);
     pc = construct_word(lowpc, highpc);
     cycles += 4;
