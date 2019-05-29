@@ -17,6 +17,7 @@ class Mmu {
         }
 
         void load_rom(const char*);
+        void test_boot_rom();
 };
 
 #endif // MMU_HPP

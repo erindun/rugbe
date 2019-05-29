@@ -10,4 +10,5 @@ class GameBoy {
             mmu.load_rom(filepath);
         }
         void emulate() { cpu.emulate(); }
+        void test_boot_rom() { mmu.test_boot_rom(); }
 };
