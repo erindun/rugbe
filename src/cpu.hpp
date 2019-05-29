@@ -4,28 +4,29 @@
 #include <cstdint>
 
 #include "registers.hpp"
+#include "mmu/mmu.hpp"
 
 class Cpu {
     public:
-        Cpu();
+        Cpu(Mmu* mmu);
         void load_rom(const char* filepath);
         void emulate();
         void disassemble_op();
 
     private:
+        Mmu* mmu;
         uint16_t pc;
-        std::array<uint8_t, 65536> mmu;
         Registers reg;
         uint16_t sp;
         int cycles;
 
         // Read data from memory
         template <typename T>
-        uint8_t read_mmu(T addr) { cycles += 4; return mmu.at(addr); }
+        uint8_t read_mmu(T addr) { cycles += 4; return mmu->at(addr); }
 
         // Write data into memory
         template <typename T> 
-        void write_mmu(T addr, uint8_t data) { cycles += 4; mmu.at(addr) = data; }
+        void write_mmu(T addr, uint8_t data) { cycles += 4; mmu->at(addr) = data; }
 
         // Get immediate data
         uint8_t get_n();

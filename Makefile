@@ -2,7 +2,7 @@ CXX = g++
 
 CXXFLAGS = -Wall -Werror
 
-OBJS = main.o disassembler.o cpu.o instructions.o
+OBJS = main.o disassembler.o cpu.o instructions.o mmu.o
 
 all: $(OBJS)
 	$(CXX) $(CXXFLAGS) $(OBJS) -o rugbe
@@ -18,6 +18,9 @@ cpu.o: src/cpu.cpp
 
 instructions.o: src/instructions.cpp
 	$(CXX) $(CXXFLAGS) -c src/instructions.cpp
+
+mmu.o: src/mmu/mmu.cpp
+	$(CXX) $(CXXFLAGS) -c src/mmu/mmu.cpp
 
 clean:
 	rm -rf *.o rugbe
