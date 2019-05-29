@@ -134,17 +134,17 @@ class Registers {
         void calc_hf(S val1, T val2) {
             // If operation is subtraction
             if (get_nf()) {
-                if (((val1 & 0x3f) + (val2 & 0x3f)) > 0x40) {
-                    set_hf(1);
-                } else {
+                if (((val1 & 0xf) < (val2 & 0xf))) {
                     set_hf(0);
+                } else {
+                    set_hf(1);
                 }
             // If operation is addition
             } else {
-                if ((val1 & 0x3f) < (val2 & 0x3f)) {
-                    set_hf(0);
-                } else {
+                if ((((val1 & 0xf) + (val2 & 0xf)) & 0x10) == 0x10) {
                     set_hf(1);
+                } else {
+                    set_hf(0);
                 }
             }
         }
