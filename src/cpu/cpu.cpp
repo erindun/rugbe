@@ -9,7 +9,7 @@
 Cpu::Cpu(Mmu* mmu) : mmu {mmu}, pc {0}, sp {0xfffe}, cycles {0} {}
 
 void Cpu::emulate() {
-    // Increment PC by default. Some Instructions may set this to false.
+    // Increment PC by default. Some instructions may set this to false.
     increment_pc = true;
 
     // Print current instruction
