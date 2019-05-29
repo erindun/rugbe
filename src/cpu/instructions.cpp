@@ -1,5 +1,6 @@
 #include "cpu.hpp"
 
+
 inline uint8_t Cpu::get_n() {
     ++pc;
     return read_mmu(pc);
@@ -310,9 +311,9 @@ void Cpu::CALL_nn(bool c) {
     uint16_t nn = get_nn();
 
     if (c) {
+        ++pc;
         uint8_t lowpc = pc & 0xff;
         uint8_t highpc = (pc >> 8) & 0xff;
-        ++pc;
         push(lowpc, highpc);
         pc = nn;
         increment_pc = false;
