@@ -47,8 +47,8 @@ class Cpu {
         void LDH_a_np();
         void LD_cp_a();
         void LD_a_cp();
-        void POP_xx(uint8_t, uint8_t);
-        void PUSH_xx(uint16_t);
+        void POP_rr(uint8_t, uint8_t);
+        void PUSH_rr(uint8_t, uint8_t);
 
         // arithmetic
         void INC_r(uint8_t&);

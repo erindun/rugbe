@@ -207,11 +207,11 @@ void Cpu::emulate() {
         case 0xbe: CP_a_x(read_mmu(reg.hl())); break;
         case 0xbf: CP_a_x(reg.a()); break;
         case 0xc0: RET_c(!reg.get_zf()); break;
-        case 0xc1: POP_xx(reg.b(), reg.c()); break;
+        case 0xc1: POP_rr(reg.b(), reg.c()); break;
         case 0xc2: JP_nn(!reg.get_zf()); break;
         case 0xc3: JP_nn(); break;
         case 0xc4: CALL_nn(!reg.get_zf()); break;
-        case 0xc5: PUSH_xx(reg.bc()); break;
+        case 0xc5: PUSH_rr(reg.b(), reg.c()); break;
         case 0xc6: ADD_a_x(get_n()); break;
         case 0xc7: RST_h(0); break;
         case 0xc8: RET_c(reg.get_zf()); break;
@@ -483,11 +483,11 @@ void Cpu::emulate() {
         case 0xce: ADC_a_x(get_n()); break;
         case 0xcf: RST_h(8); break;
         case 0xd0: RET_c(!reg.get_cf()); break;
-        case 0xd1: POP_xx(reg.d(), reg.e()); break;
+        case 0xd1: POP_rr(reg.d(), reg.e()); break;
         case 0xd2: JP_nn(!reg.get_cf()); break;
         case 0xd3: break;
         case 0xd4: CALL_nn(!reg.get_cf()); break;
-        case 0xd5: PUSH_xx(reg.de()); break;
+        case 0xd5: PUSH_rr(reg.d(), reg.e()); break;
         case 0xd6: SUB_a_x(get_n()); break;
         case 0xd7: RST_h(10); break;
         case 0xd8: RET_c(reg.get_cf()); break;
@@ -499,11 +499,11 @@ void Cpu::emulate() {
         case 0xde: SBC_a_x(get_n()); break;
         case 0xdf: RST_h(18); break;
         case 0xe0: LDH_np_a(); break;
-        case 0xe1: POP_xx(reg.h(), reg.l()); break;
+        case 0xe1: POP_rr(reg.h(), reg.l()); break;
         case 0xe2: LD_cp_a(); break;
         case 0xe3: break;
         case 0xe4: break;
-        case 0xe5: PUSH_xx(reg.hl()); break;
+        case 0xe5: PUSH_rr(reg.h(), reg.l()); break;
         case 0xe6: AND_a_x(get_n()); break;
         case 0xe7: RST_h(20); break;
         case 0xe8: ADD_sp_i(); break;
@@ -515,11 +515,11 @@ void Cpu::emulate() {
         case 0xee: XOR_a_x(get_n()); break;
         case 0xef: RST_h(28); break;
         case 0xf0: LDH_a_np(); break;
-        case 0xf1: POP_xx(reg.a(), reg.f()); break;
+        case 0xf1: POP_rr(reg.a(), reg.f()); break;
         case 0xf2: LD_a_cp(); break;
         case 0xf3: break; // TODO: DI
         case 0xf4: break;
-        case 0xf5: PUSH_xx(reg.af()); break;
+        case 0xf5: PUSH_rr(reg.a(), reg.f()); break;
         case 0xf6: OR_a_x(get_n()); break;
         case 0xf7: RST_h(30); break;
         case 0xf8: LD_rr_rri(reg.hl(), sp); break;

@@ -83,25 +83,22 @@ void Cpu::LD_a_cp() {
 
 // TODO: make individual (HL-) and (HL+) functions?
 
-// For the sake of simplicity, the 16-bit register is passed as its
-// two individual 8-bit registers
-// TODO: check endian-ness
-void Cpu::POP_xx(uint8_t r1, uint8_t r2) {
-    r1 = read_mmu(sp);
+void Cpu::POP_rr(uint8_t r1, uint8_t r2) {
+    r1 = read_mmu(r2);
     ++sp;
-    r2 = read_mmu(sp);
+    r2 = read_mmu(r1);
     ++sp;
 }
 
 // Takes extra cycle
+// For the sake of simplicity, the 16-bit register is passed as its
+// two individual 8-bit registers
 // TODO: check endian-ness
-void Cpu::PUSH_xx(uint16_t xx) {
-    uint8_t hibyte = xx & 0b11110000;
-    uint8_t lobyte = xx & 0b00001111;
+void Cpu::PUSH_rr(uint8_t r1, uint8_t r2) {
     --sp;
-    write_mmu(sp, hibyte);
+    write_mmu(sp, r1);
     --sp;
-    write_mmu(sp, lobyte);
+    write_mmu(sp, r2);
     cycles += 4;
 }
 
@@ -294,12 +291,12 @@ void Cpu::CALL_nn(bool c) {
     uint16_t nn = get_nn();
 
     if (c) {
-        // I am cheating a bit using the PUSH_xx function. Because there
-        // technically isn't a call to the PUSH instruction here, take off
-        // 4 cycles for the ones added by PUSH_xx.
-        cycles -= 4;
-        // TODO: Should I push pc + 1?
-        PUSH_xx(pc);
+        uint8_t lopc = pc & 0xff;
+        uint8_t hipc = (pc >> 8) & 0xff;
+        --sp;
+        write_mmu(sp, lopc);
+        --sp;
+        write_mmu(sp, hipc);
         pc = nn;
     }
 }
@@ -334,8 +331,15 @@ void Cpu::RET_c(bool c) {
 
 // Takes 16 cycles
 void Cpu::RST_h(int h) {
-    PUSH_xx(pc);
+    uint8_t lopc = pc & 0xff;
+    uint8_t hipc = (pc >> 8) & 0xff;
+    --sp;
+    write_mmu(sp, lopc);
+    --sp;
+    write_mmu(sp, hipc);
     pc = h;
+
+    cycles += 4;
 }
 
 
