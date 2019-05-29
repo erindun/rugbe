@@ -18,7 +18,7 @@ void Cpu::emulate() {
         case 0x04: INC_r(reg.b()); break;
         case 0x05: DEC_r(reg.b()); break;
         case 0x06: LD_r_x(reg.b(), get_n()); break;
-        case 0x07: RLCA(); break;
+        case 0x07: RLC_r(reg.a()); break;
         case 0x08: LD_nnp_rr(sp); break;
         case 0x09: ADD_hl_rr(reg.bc()); break;
         case 0x0a: LD_r_x(reg.a(), get_hlp()); break;
@@ -26,7 +26,7 @@ void Cpu::emulate() {
         case 0x0c: INC_r(reg.c()); break;
         case 0x0d: DEC_r(reg.c()); break;
         case 0x0e: LD_r_x(reg.c(), get_n()); break;
-        case 0x0f: RRCA(); break;
+        case 0x0f: RRC_r(reg.a()); break;
         case 0x10: break; // TODO: STOP
         case 0x11: LD_rr_nn(reg.de()); break;
         case 0x12: LD_xxp_x(reg.de(), reg.a()); break;
@@ -34,7 +34,7 @@ void Cpu::emulate() {
         case 0x14: INC_r(reg.d()); break;
         case 0x15: DEC_r(reg.d()); break;
         case 0x16: LD_r_x(reg.d(), get_n()); break;
-        case 0x17: RLA(); break;
+        case 0x17: RL_r(reg.a()); break;
         case 0x18: JR_i(); break;
         case 0x19: ADD_hl_rr(reg.de()); break;
         case 0x1a: LD_r_x(reg.a(), read_mmu(reg.de())); break;
@@ -42,7 +42,7 @@ void Cpu::emulate() {
         case 0x1c: INC_r(reg.e()); break;
         case 0x1d: DEC_r(reg.e()); break;
         case 0x1e: LD_r_x(reg.e(), get_n()); break;
-        case 0x1f: RRA(); break;
+        case 0x1f: RR_r(reg.a()); break;
         case 0x20: JR_i(!reg.get_zf()); break;
         case 0x21: LD_rr_nn(reg.hl()); break;
         case 0x22: LD_xxp_x(reg.hl(), reg.a()); ++reg.hl(); break;

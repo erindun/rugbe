@@ -56,6 +56,15 @@ class Cpu {
         void push(uint8_t, uint8_t);
         void pop(uint8_t&, uint8_t&);
 
+        // Bit shift algorithms
+        void rlc(uint8_t&);
+        void rl(uint8_t&);
+        void rrc(uint8_t&);
+        void rr(uint8_t&);
+        void sla(uint8_t&);
+        void sra(uint8_t&);
+        void swap(uint8_t&);
+        void srl(uint8_t&);
 
         // Instructions
 
@@ -106,10 +115,6 @@ class Cpu {
         void RST_h(int);
 
         // bit shift
-        void RLCA();
-        void RLA();
-        void RRCA();
-        void RRA();
         void RLC_r(uint8_t&);
         void RLC_hlp();
         void RRC_r(uint8_t&);

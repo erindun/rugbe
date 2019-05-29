@@ -1,6 +1,7 @@
 #include "cpu.hpp"
 #include <iostream>
 
+// Push args into stack
 inline void Cpu::push(uint8_t x, uint8_t y) {
     --sp;
     write_mmu(sp, x);
@@ -8,6 +9,7 @@ inline void Cpu::push(uint8_t x, uint8_t y) {
     write_mmu(sp, y);
 }
 
+// Pop word from stack into args
 inline void Cpu::pop(uint8_t& x, uint8_t& y) {
     y = read_mmu(sp);
     ++sp;
@@ -15,8 +17,103 @@ inline void Cpu::pop(uint8_t& x, uint8_t& y) {
     ++sp;
 }
 
-inline uint16_t construct_word(uint8_t lowbyte, uint8_t highbyte) {
-    return (highbyte << 8) | lowbyte;
+// Rotate left
+inline void Cpu::rlc(uint8_t& x) {
+    reg.set_cf((reg.a() & 0b10000000) >> 7);
+    x = (x << 1) | (x >> 7);
+
+    // Set flags
+    reg.calc_zf(x);
+    reg.set_nf(0);
+    reg.set_hf(0);
+}
+
+// Rotate right
+inline void Cpu::rrc(uint8_t& x) {
+    reg.set_cf(x & 0b00000001);
+    x = (x >> 1) | (x << 7);
+
+    // Set flags
+    reg.calc_zf(x);
+    reg.set_nf(0);
+    reg.set_hf(0);
+}
+
+// Rotate left through carry
+inline void Cpu::rl(uint8_t& x) {
+    bool carry = reg.get_cf();
+    reg.set_cf((reg.a() & 0b10000000) >> 7);
+    x <<= 1;
+
+    // Set bit0 to the value of the carry
+    x += (carry ? 1 : 0);
+
+    // Set flags
+    reg.calc_zf(x);
+    reg.set_nf(0);
+    reg.set_hf(0);
+}
+
+// Rotate right through carry
+inline void Cpu::rr(uint8_t& x) {
+    bool carry = reg.get_cf();
+    reg.set_cf(x & 0b00000001);
+    x >>= 1;
+
+    // Set bit7 to the value of the carry
+    x |= (carry ? 0b10000000 : 0b00000000);
+
+    reg.calc_zf(x);
+    reg.set_nf(0);
+    reg.set_hf(0);
+}
+
+// Shift left arithmetic
+inline void Cpu::sla(uint8_t& x) {
+    reg.set_cf((reg.a() & 0b10000000) >> 7);
+
+    x <<= 1;
+    
+    // Set flags
+    reg.calc_zf(x);
+    reg.set_nf(0);
+    reg.set_hf(0);
+}
+
+// Shift right arithmetic
+inline void Cpu::sra(uint8_t& x) {
+    reg.set_cf((reg.a() & 0b10000000) >> 7);
+
+    x >>= 1;
+    
+    // Set flags
+    reg.calc_zf(x);
+    reg.set_nf(0);
+    reg.set_hf(0);
+}
+
+// Shift right logical TODO
+inline void Cpu::srl(uint8_t& x) {
+    reg.set_cf((reg.a() & 0b10000000) >> 7);
+
+    x >>= 1;
+    
+    // Set flags
+    reg.calc_zf(x);
+    reg.set_nf(0);
+    reg.set_hf(0);
+}
+
+inline void Cpu::swap(uint8_t& x) {
+    uint8_t low = x & 0b00001111;
+    uint8_t high = (x & 0b11110000) >> 4;
+    x = (low << 4) | high;
+
+    // Set flags
+    reg.calc_zf(x);
+    reg.set_nf(0);
+    reg.set_hf(0);
+    reg.set_cf(0);
 }
 
 // Rotate bits
@@ -371,82 +468,21 @@ void Cpu::RST_h(int h) {
  *************************/
 
 
-// Rotate A left, store old bit 7 in CF. Reset ZF, NF, HF to 0
-void Cpu::RLCA() {  
-    reg.set_cf((reg.a() & 0b10000000) >> 7);
-    rotate_left(reg.a());
-
-    reg.set_zf(0);
-    reg.set_nf(0);
-    reg.set_hf(0);
-}
-
-// Rotate A left through carry
-void Cpu::RLA() {
-    bool carry = reg.get_cf();
-    reg.set_cf((reg.a() & 0b10000000) >> 7);
-
-    rotate_left(reg.a());
-    reg.a() += (carry ? 1 : 0);
-
-    reg.set_zf(0);
-    reg.set_nf(0);
-    reg.set_hf(0);
-}
-
-// Rotate A right, store old bit 0 in CF. Reset ZF, NF, HF to 0
-void Cpu::RRCA() {
-    reg.set_cf(reg.a() & 0b00000001);
-    rotate_left(reg.a());
-
-    reg.set_zf(0);
-    reg.set_nf(0);
-    reg.set_hf(0);
-}
-
-// Rotate A right through carry
-void Cpu::RRA() {
-    bool carry = reg.get_cf();
-    reg.set_cf(reg.a() & 0b00000001);
-
-    rotate_right(reg.a());
-    reg.a() += (carry ? 1 : 0);
-
-    reg.set_zf(0);
-    reg.set_nf(0);
-    reg.set_hf(0);
-}
-
-// Rotate u8 left, store old bit 7 in CF. Set ZF, reset NF and HF to 0
+// Rotate r left, store old bit 7 in CF. Set ZF, reset NF and HF to 0
 void Cpu::RLC_r(uint8_t& r) {
     reg.set_cf((reg.a() & 0b10000000) >> 7);
-    rotate_left(r);
+    r = (r << 1) | (r >> 7);
 
     // Set flags
     reg.calc_zf(r);
     reg.set_nf(0);
     reg.set_hf(0);
 }
-
-// Rotate (HL) left, store old bit 7 in CF. Set ZF, reset NF and HF to 0
-void Cpu::RLC_hlp() {
-    uint8_t hlp = get_hlp();
-
-    reg.set_cf((reg.a() & 0b10000000) >> 7);
-    rotate_left(hlp);
-
-    // Set flags
-    reg.calc_zf(hlp);
-    reg.set_nf(0);
-    reg.set_hf(0);
-
-    cycles += 4;
-}   
 
 // Rotate r right, store old bit 0 in CF. Set ZF, reset NF and HF to 0
 void Cpu::RRC_r(uint8_t& r) {
     reg.set_cf(r & 0b00000001);
-    rotate_right(r);
+    r = (r >> 1) | (r << 7);
 
     // Set flags
     reg.calc_zf(r);
@@ -454,189 +490,114 @@ void Cpu::RRC_r(uint8_t& r) {
     reg.set_hf(0);
 }
 
-// Rotate (HL) right, store old bit 0 in CF. Set ZF, reset NF and HF to 0
-void Cpu::RRC_hlp() {
-    uint8_t hlp = get_hlp();
-
-    reg.set_cf(hlp & 0b00000001);
-    rotate_left(hlp);
-
-    // Set flags
-    reg.calc_zf(hlp);
-    reg.set_nf(0);
-    reg.set_hf(0);
-
-    cycles += 4;
-}   
-
-// Rotate r left through carry
+// Rotate r left through carry. Store old bit 7 in CF. Set ZF, reset NF and HF to 0
 void Cpu::RL_r(uint8_t& r) {
-    bool carry = reg.get_cf();
-    reg.set_cf((reg.a() & 0b10000000) >> 7);
-
-    rotate_left(r);
-    r += (carry ? 1 : 0);
-
-    reg.calc_zf(r);
-    reg.set_nf(0);
-    reg.set_hf(0);
-}
-
-// Rotate (HL) left through carry
-void Cpu::RL_hlp() {
-    uint8_t hlp = get_hlp();
-    bool carry = reg.get_cf();
-    reg.set_cf((reg.a() & 0b10000000) >> 7);
-
-    rotate_left(hlp);
-    hlp += (carry ? 1 : 0);
-
-    reg.calc_zf(hlp);
-    reg.set_nf(0);
-    reg.set_hf(0);
-
-    cycles += 4;
+    rl(r);
 }
 
 // Rotate r right through carry
 void Cpu::RR_r(uint8_t& r) {
-    bool carry = reg.get_cf();
-    reg.set_cf(r & 0b00000001);
+    rr(r);
+}
 
-    rotate_right(r);
-    r += (carry ? 1 : 0);
+// Rotate (HL) left
+void Cpu::RLC_hlp() {
+    auto hlp = get_hlp();
+    auto oldhlp = hlp;
 
-    reg.calc_zf(r);
-    reg.set_nf(0);
-    reg.set_hf(0);
+    rlc(hlp);
+
+    write_mmu(oldhlp, hlp);
+}
+
+// Rotate (HL) right
+void Cpu::RRC_hlp() {
+    auto hlp = get_hlp();
+    auto oldhlp = hlp;
+
+    rrc(hlp);
+
+    write_mmu(oldhlp, hlp);
+}
+
+// Rotate (HL) left through carry
+void Cpu::RL_hlp() {
+    auto hlp = get_hlp();
+    auto oldhlp = hlp;
+
+    rl(hlp);
+
+    write_mmu(oldhlp, hlp);
 }
 
 // Rotate (HL) right through carry
 void Cpu::RR_hlp() {
-    uint8_t hlp = get_hlp();
-    bool carry = reg.get_cf();
-    reg.set_cf(hlp & 0b00000001);
+    auto hlp = get_hlp();
+    auto oldhlp = hlp;
 
-    rotate_right(hlp);
-    hlp += (carry ? 1 : 0);
+    rr(hlp);
 
-    reg.calc_zf(hlp);
-    reg.set_nf(0);
-    reg.set_hf(0);
-
-    cycles += 4;
+    write_mmu(oldhlp, hlp);
 }
 
-// Shift r left. Bit 7 becomes CF
+// Shift r left logical
 void Cpu::SLA_r(uint8_t& r) {
-    reg.set_cf((reg.a() & 0b10000000) >> 7);
-
-    r <<= 1;
-    
-    // Set flags
-    reg.calc_zf(r);
-    reg.set_nf(0);
-    reg.set_hf(0);
+    sla(r);
 }
 
 // Shift r left. Bit 7 becomes CF
 void Cpu::SLA_hlp() {
-    uint8_t hlp = get_hlp();
-    reg.set_cf((reg.a() & 0b10000000) >> 7);
+    auto hlp = get_hlp();
+    auto oldhlp = hlp;
 
-    hlp <<= 1;
-    
-    // Set flags
-    reg.calc_zf(hlp);
-    reg.set_nf(0);
-    reg.set_hf(0);
-    
-    cycles += 4;
+    sla(hlp);
+
+    write_mmu(oldhlp, hlp);
 }
 
 // Shift u8 right. Bit 0 becomes CF
 void Cpu::SRA_r(uint8_t& r) {
-    reg.set_cf(r & 0b00000001);
-
-    r >>= 1;
-    
-    // Set flags
-    reg.calc_zf(r);
-    reg.set_nf(0);
-    reg.set_hf(0);
+    sra(r);
 }
 
 // Shift u8 right. Bit 0 becomes CF
 void Cpu::SRA_hlp() {
-    uint8_t hlp = get_hlp();
-    reg.set_cf(hlp & 0b00000001);
+    auto hlp = get_hlp();
+    auto oldhlp = hlp;
 
-    hlp >>= 1;
-    
-    // Set flags
-    reg.calc_zf(hlp);
-    reg.set_nf(0);
-    reg.set_hf(0);
+    sra(hlp);
 
-    cycles += 4;
+    write_mmu(oldhlp, hlp);
 }
 
 // Swap nibbles (e.g. byte 11110000 becomes 00001111)
 void Cpu::SWAP_r(uint8_t& r) {
-    uint8_t low = r & 0b00001111;
-    uint8_t high = (r & 0b11110000) >> 4;
-    r = (low << 4) | high;
-
-    // Set flags
-    reg.calc_zf(r);
-    reg.set_nf(0);
-    reg.set_hf(0);
-    reg.set_cf(0);
+    swap(r);
 }
 
 // Swap nibbles (e.g. byte 11110000 becomes 00001111)
 void Cpu::SWAP_hlp() {
-    uint8_t hlp = get_hlp();
-    uint8_t low = hlp & 0b00001111;
-    uint8_t high = (hlp & 0b11110000) >> 4;
-    hlp = (low << 4) | high;
+    auto hlp = get_hlp();
+    auto oldhlp = hlp;
 
-    // Set flags
-    reg.calc_zf(hlp);
-    reg.set_nf(0);
-    reg.set_hf(0);
-    reg.set_cf(0);
+    swap(hlp);
 
-    cycles += 4;
+    write_mmu(oldhlp, hlp);
 }
 
-// Shift u8 right. Bit 0 becomes CF
-// TODO
+// Shift r right logical
 void Cpu::SRL_r(uint8_t& r) {
-    reg.set_cf(r & 0b00000001);
-
-    r >>= 1;
-    
-    // Set flags
-    reg.calc_zf(r);
-    reg.set_nf(0);
-    reg.set_hf(0);
+    srl(r);
 }
 
-// Shift u8 right. Bit 0 becomes CF
-// TODO
+// Shift (HL) right logical
 void Cpu::SRL_hlp() {
-    uint8_t hlp = get_hlp();
-    reg.set_cf(hlp & 0b00000001);
+    auto hlp = get_hlp();
+    auto oldhlp = hlp;
 
-    hlp >>= 1;
-    
-    // Set flags
-    reg.calc_zf(hlp);
-    reg.set_nf(0);
-    reg.set_hf(0);
+    sra(hlp);
 
-    cycles += 4;
+    write_mmu(oldhlp, hlp);
 }
 
 // Test bit N of u8 and set ZF accordingly
