@@ -2,7 +2,7 @@ CXX = g++
 
 CXXFLAGS = -Wall -Werror
 
-OBJS = main.o disassembler.o cpu.o instructions.o mmu.o
+OBJS = main.o disassembler.o cpu.o instructions.o mmu.o ppu.o gameboy.o
 
 all: $(OBJS)
 	$(CXX) $(CXXFLAGS) $(OBJS) -o rugbe
@@ -21,6 +21,12 @@ instructions.o: src/cpu/instructions.cpp
 
 mmu.o: src/mmu/mmu.cpp
 	$(CXX) $(CXXFLAGS) -c src/mmu/mmu.cpp
+
+ppu.o: src/ppu/ppu.cpp
+	$(CXX) $(CXXFLAGS) -c src/ppu/ppu.cpp
+
+gameboy.o: src/gameboy.cpp
+	$(CXX) $(CXXFLAGS) -c src/gameboy.cpp
 
 clean:
 	rm -rf *.o rugbe

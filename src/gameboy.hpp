@@ -1,3 +1,5 @@
+#ifndef GAMEBOY_HPP
+#define GAMEBOY_HPP
 #include "mmu/mmu.hpp"
 #include "cpu/cpu.hpp"
 #include "ppu/ppu.hpp"
@@ -8,12 +10,9 @@ class GameBoy {
         Cpu cpu;
         Ppu ppu;
     public:
-        GameBoy(const char* filepath) : ppu {&cpu}, cpu {Cpu(&mmu)}  {
-            mmu.load_rom(filepath);
-        }
-        void emulate() { 
-            cpu.emulate();
-            ppu.step_clock();
-        }
-        void test_boot_rom() { mmu.test_boot_rom(); }
+        GameBoy(const char*);
+        void emulate();
+        void test_boot_rom();
 };
+
+#endif // GAMEBOY_HPP

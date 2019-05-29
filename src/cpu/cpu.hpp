@@ -5,7 +5,6 @@
 
 #include "registers.hpp"
 #include "../mmu/mmu.hpp"
-#include "../ppu/ppu.hpp"
 
 class Cpu {
     public:
