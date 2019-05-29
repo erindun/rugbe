@@ -33,6 +33,10 @@ class Cpu {
         uint16_t get_nn();
         int8_t get_i();
 
+        // Push/pop values to stack
+        void push(uint8_t x, uint8_t y);
+        void pop(uint8_t x, uint8_t y);
+
 
         // Instructions
 

@@ -5,16 +5,37 @@ inline uint8_t Cpu::get_n() {
     return read_mmu(pc);
 }
 
-// TODO check endian-ness
 inline uint16_t Cpu::get_nn() {
-    uint16_t lobyte = get_n();
-    uint16_t hibyte = get_n() << 8;
-    return hibyte | lobyte; 
+    uint16_t lowbyte = get_n();
+    uint16_t highbyte = get_n() << 8;
+    return highbyte | lowbyte; 
 }
 
 inline int8_t Cpu::get_i() {
     return static_cast<int8_t>(get_n());
 }
+
+inline void Cpu::push(uint8_t x, uint8_t y) {
+    --sp;
+    write_mmu(sp, x);
+    --sp;
+    write_mmu(sp, y);
+}
+
+inline void Cpu::pop(uint8_t x, uint8_t y) {
+    y = read_mmu(sp);
+    ++sp;
+    x = read_mmu(sp);
+    ++sp;
+}
+
+inline uint16_t construct_word(uint8_t lowbyte, uint8_t highbyte) {
+    return (highbyte << 8) | lowbyte;
+}
+
+// Rotate bits
+inline void rotate_left(uint8_t& r) { r = (r << 1) | (r >> 7); }
+inline void rotate_right(uint8_t& r) { r = (r >> 1) | (r << 7); }
 
 // r: 8-bit register
 // rr: 16-bit register
@@ -46,11 +67,11 @@ void Cpu::LD_rr_nn(uint16_t& rr) {
 
 // TODO: check endian-ness
 void Cpu::LD_nnp_rr(uint16_t rr) {
-    uint8_t hibyte = rr & 0b11110000;
-    uint8_t lobyte = rr & 0b00001111;
+    uint8_t highbyte = (rr >> 8 & 0xff);
+    uint8_t lowbyte = rr & 0xff;
 
-    write_mmu(get_n(), lobyte);
-    write_mmu(get_n(), hibyte);
+    write_mmu(get_n(), lowbyte);
+    write_mmu(get_n(), highbyte);
 }
 
 void Cpu::LD_rr_rri(uint16_t rr1, uint16_t rr2) {
@@ -84,21 +105,14 @@ void Cpu::LD_a_cp() {
 // TODO: make individual (HL-) and (HL+) functions?
 
 void Cpu::POP_rr(uint8_t r1, uint8_t r2) {
-    r1 = read_mmu(r2);
-    ++sp;
-    r2 = read_mmu(r1);
-    ++sp;
+    pop(r1, r2);
 }
 
 // Takes extra cycle
 // For the sake of simplicity, the 16-bit register is passed as its
 // two individual 8-bit registers
-// TODO: check endian-ness
 void Cpu::PUSH_rr(uint8_t r1, uint8_t r2) {
-    --sp;
-    write_mmu(sp, r1);
-    --sp;
-    write_mmu(sp, r2);
+    push(r1, r2);
     cycles += 4;
 }
 
@@ -291,32 +305,29 @@ void Cpu::CALL_nn(bool c) {
     uint16_t nn = get_nn();
 
     if (c) {
-        uint8_t lopc = pc & 0xff;
-        uint8_t hipc = (pc >> 8) & 0xff;
-        --sp;
-        write_mmu(sp, lopc);
-        --sp;
-        write_mmu(sp, hipc);
+        uint8_t lowpc = pc & 0xff;
+        uint8_t highpc = (pc >> 8) & 0xff;
+        push(lowpc, highpc);
         pc = nn;
     }
 }
 
 // Takes 16 cycles
 void Cpu::RET() {
-    ++sp;
-    uint8_t lobyte = read_mmu(sp);
-    uint8_t hibyte = (read_mmu(sp)) << 8;
-    pc = hibyte | lobyte;
+    uint8_t lowpc;
+    uint8_t highpc;
+    pop(lowpc, highpc);
+    pc = construct_word(lowpc, highpc);
     cycles += 4;
 }
 
 // Takes 16 cycles
 // TODO: Add interrupt support
 void Cpu::RETI() {
-    ++sp;
-    uint8_t lobyte = read_mmu(sp);
-    uint8_t hibyte = (read_mmu(sp)) << 8;
-    pc = hibyte | lobyte;
+    uint8_t lowpc;
+    uint8_t highpc;
+    pop(lowpc, highpc);
+    pc = construct_word(lowpc, highpc);
     cycles += 4;
 }
 
@@ -331,12 +342,9 @@ void Cpu::RET_c(bool c) {
 
 // Takes 16 cycles
 void Cpu::RST_h(int h) {
-    uint8_t lopc = pc & 0xff;
-    uint8_t hipc = (pc >> 8) & 0xff;
-    --sp;
-    write_mmu(sp, lopc);
-    --sp;
-    write_mmu(sp, hipc);
+    uint8_t lowpc = pc & 0xff;
+    uint8_t highpc = (pc >> 8) & 0xff;
+    push(lowpc, highpc);
     pc = h;
 
     cycles += 4;
@@ -347,10 +355,6 @@ void Cpu::RST_h(int h) {
  *      bit shift
  *************************/
 
-
-// Rotate bits
-inline void rotate_left(uint8_t& r) { r = (r << 1) | (r >> 7); }
-inline void rotate_right(uint8_t& r) { r = (r >> 1) | (r << 7); }
 
 // Rotate A left, store old bit 7 in CF. Reset ZF, NF, HF to 0
 void Cpu::RLCA() {  
