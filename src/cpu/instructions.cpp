@@ -17,23 +17,17 @@ inline int8_t Cpu::get_i() {
     return static_cast<int8_t>(get_n());
 }
 
-// FIXME
 inline void Cpu::push(uint8_t x, uint8_t y) {
     --sp;
     write_mmu(sp, x);
-    std::cout << "pushed: " << std::hex << (int)x << std::endl;
     --sp;
     write_mmu(sp, y);
-    std::cout << "pushed: " << std::hex << (int)y << std::endl;
 }
 
-// FIXME
 inline void Cpu::pop(uint8_t& x, uint8_t& y) {
     y = read_mmu(sp);
-    std::cout << "popped: " << std::hex << (int)y << std::endl;
     ++sp;
     x = read_mmu(sp);
-    std::cout << "popped: " << std::hex << (int)x << std::endl;
     ++sp;
 }
 
@@ -78,8 +72,8 @@ void Cpu::LD_nnp_rr(uint16_t rr) {
     uint8_t highbyte = (rr >> 8 & 0xff);
     uint8_t lowbyte = rr & 0xff;
 
-    write_mmu(get_n(), lowbyte);
     write_mmu(get_n(), highbyte);
+    write_mmu(get_n(), lowbyte);
 }
 
 void Cpu::LD_rr_rri(uint16_t rr1, uint16_t rr2) {
@@ -109,8 +103,6 @@ void Cpu::LD_cp_a() {
 void Cpu::LD_a_cp() {
     reg.a() = read_mmu(0xff00 + reg.c());
 }
-
-// TODO: make individual (HL-) and (HL+) functions?
 
 void Cpu::POP_rr(uint8_t r1, uint8_t r2) {
     pop(r1, r2);
@@ -250,6 +242,24 @@ void Cpu::CP_a_x(uint8_t x) {
     reg.calc_zf(reg.a() - x);
 }
 
+void Cpu::CPL() {
+    reg.a() = ~reg.a();
+    reg.set_nf(1);
+    reg.set_hf(1);
+}
+
+void Cpu::CCF() {
+    reg.set_cf(!reg.get_cf());
+    reg.set_nf(0);
+    reg.set_hf(0);
+}
+
+void Cpu::SCF() {
+    reg.set_cf(1);
+    reg.set_nf(0);
+    reg.set_hf(0);
+}
+
 void Cpu::INC_rr(uint16_t& rr) {
     ++rr;
 }
@@ -377,7 +387,7 @@ void Cpu::RST_h(int h) {
 
 // Rotate A left, store old bit 7 in CF. Reset ZF, NF, HF to 0
 void Cpu::RLCA() {  
-    reg.set_cf(reg.a() & 0b01000000);
+    reg.set_cf((reg.a() & 0b10000000) >> 7);
     rotate_left(reg.a());
 
     reg.set_zf(0);
@@ -388,7 +398,7 @@ void Cpu::RLCA() {
 // Rotate A left through carry
 void Cpu::RLA() {
     bool carry = reg.get_cf();
-    reg.set_cf(reg.a() & 0b01000000);
+    reg.set_cf((reg.a() & 0b10000000) >> 7);
 
     rotate_left(reg.a());
     reg.a() += (carry ? 1 : 0);
@@ -423,7 +433,7 @@ void Cpu::RRA() {
 
 // Rotate u8 left, store old bit 7 in CF. Set ZF, reset NF and HF to 0
 void Cpu::RLC_r(uint8_t& r) {
-    reg.set_cf(r & 0b01000000);
+    reg.set_cf((reg.a() & 0b10000000) >> 7);
     rotate_left(r);
 
     // Set flags
@@ -436,7 +446,7 @@ void Cpu::RLC_r(uint8_t& r) {
 void Cpu::RLC_hlp() {
     uint8_t hlp = read_mmu(reg.hl());
 
-    reg.set_cf(hlp & 0b01000000);
+    reg.set_cf((reg.a() & 0b10000000) >> 7);
     rotate_left(hlp);
 
     // Set flags
@@ -476,7 +486,7 @@ void Cpu::RRC_hlp() {
 // Rotate r left through carry
 void Cpu::RL_r(uint8_t& r) {
     bool carry = reg.get_cf();
-    reg.set_cf(r & 0b01000000);
+    reg.set_cf((reg.a() & 0b10000000) >> 7);
 
     rotate_left(r);
     r += (carry ? 1 : 0);
@@ -490,7 +500,7 @@ void Cpu::RL_r(uint8_t& r) {
 void Cpu::RL_hlp() {
     uint8_t hlp = read_mmu(reg.hl());
     bool carry = reg.get_cf();
-    reg.set_cf(hlp & 0b01000000);
+    reg.set_cf((reg.a() & 0b10000000) >> 7);
 
     rotate_left(hlp);
     hlp += (carry ? 1 : 0);
@@ -533,7 +543,7 @@ void Cpu::RR_hlp() {
 
 // Shift r left. Bit 7 becomes CF
 void Cpu::SLA_r(uint8_t& r) {
-    reg.set_cf(r & 0b01000000);
+    reg.set_cf((reg.a() & 0b10000000) >> 7);
 
     r <<= 1;
     
@@ -546,7 +556,7 @@ void Cpu::SLA_r(uint8_t& r) {
 // Shift r left. Bit 7 becomes CF
 void Cpu::SLA_hlp() {
     uint8_t hlp = read_mmu(reg.hl());
-    reg.set_cf(hlp & 0b01000000);
+    reg.set_cf((reg.a() & 0b10000000) >> 7);
 
     hlp <<= 1;
     
@@ -588,7 +598,7 @@ void Cpu::SRA_hlp() {
 // Swap nibbles (e.g. byte 11110000 becomes 00001111)
 void Cpu::SWAP_r(uint8_t& r) {
     uint8_t low = r & 0b00001111;
-    uint8_t high = (r >> 4) & 0b00001111;
+    uint8_t high = (r & 0b11110000) >> 4;
     r = (low << 4) | high;
 
     // Set flags
@@ -602,7 +612,7 @@ void Cpu::SWAP_r(uint8_t& r) {
 void Cpu::SWAP_hlp() {
     uint8_t hlp = read_mmu(reg.hl());
     uint8_t low = hlp & 0b00001111;
-    uint8_t high = (hlp >> 4) & 0b00001111;
+    uint8_t high = (hlp & 0b11110000) >> 4;
     hlp = (low << 4) | high;
 
     // Set flags
@@ -650,25 +660,25 @@ void Cpu::BIT_b_r(int bit, uint8_t r) {
             r &= 0b00000001;
             break;
         case 1:
-            r &= 0b00000010;
+            r = (r & 0b00000010) >> 1;
             break;
         case 2:
-            r &= 0b00000100;
+            r = (r & 0b00000100) >> 2;
             break;
         case 3:
-            r &= 0b00001000;
+            r = (r & 0b00001000) >> 3;
             break;
         case 4:
-            r &= 0b00010000;
+            r = (r & 0b00010000) >> 4;
             break;
         case 5:
-            r &= 0b00100000;
+            r = (r & 0b00100000) >> 5;
             break;
         case 6:
-            r &= 0b01000000;
+            r = (r & 0b01000000) >> 6;
             break;
         case 7:
-            r &= 0b10000000;
+            r = (r & 0b10000000) >> 7;
             break;
     }
 
@@ -686,25 +696,25 @@ void Cpu::BIT_b_hlp(int bit) {
             hlp &= 0b00000001;
             break;
         case 1:
-            hlp &= 0b00000010;
+            hlp = (hlp & 0b00000010) >> 1;
             break;
         case 2:
-            hlp &= 0b00000100;
+            hlp = (hlp & 0b00000100) >> 2;
             break;
         case 3:
-            hlp &= 0b00001000;
+            hlp = (hlp & 0b00001000) >> 3;
             break;
         case 4:
-            hlp &= 0b00010000;
+            hlp = (hlp & 0b00010000) >> 4;
             break;
         case 5:
-            hlp &= 0b00100000;
+            hlp = (hlp & 0b00100000) >> 5;
             break;
         case 6:
-            hlp &= 0b01000000;
+            hlp = (hlp & 0b01000000) >> 6;
             break;
         case 7:
-            hlp &= 0b10000000;
+            hlp = (hlp & 0b10000000) >> 7;
             break;
     }
 
@@ -725,37 +735,37 @@ void Cpu::RES_b_r(int bit, uint8_t r) {
             }
             break;
         case 1:
-            if ((r & 0b00000010) == 1) {
+            if (((r & 0b00000010) >> 1) == 1) {
                 r -= 0b00000010;
             }
             break;
         case 2:
-            if ((r & 0b00000100) == 1) {
+            if (((r & 0b00000100) >> 2) == 1) {
                 r -= 0b00000100;
             }
             break;
         case 3:
-            if ((r & 0b00001000) == 1) {
+            if (((r & 0b00001000) >> 3) == 1) {
                 r -= 0b00001000;
             }
             break;
         case 4:
-            if ((r & 0b00010000) == 1) {
+            if (((r & 0b00010000) >> 4) == 1) {
                 r -= 0b00010000;
             }
             break;
         case 5:
-            if ((r & 0b00100000) == 1) {
+            if (((r & 0b00100000) >> 5) == 1) {
                 r -= 0b00100000;
             }
             break;
         case 6:
-            if ((r & 0b01000000) == 1) {
+            if (((r & 0b01000000) >> 6) == 1) {
                 r -= 0b01000000;
             }
             break;
         case 7:
-            if ((r & 0b10000000) == 1) {
+            if (((r & 0b01000000) >> 7) == 1) {
                 r -= 0b10000000;
             }
             break;
@@ -773,37 +783,37 @@ void Cpu::RES_b_hlp(int bit) {
             }
             break;
         case 1:
-            if ((hlp & 0b00000010) == 1) {
+            if (((hlp & 0b00000010) >> 1) == 1) {
                 hlp -= 0b00000010;
             }
             break;
         case 2:
-            if ((hlp & 0b00000100) == 1) {
+            if (((hlp & 0b00000100) >> 2) == 1) {
                 hlp -= 0b00000100;
             }
             break;
         case 3:
-            if ((hlp & 0b00001000) == 1) {
+            if (((hlp & 0b00001000) >> 3) == 1) {
                 hlp -= 0b00001000;
             }
             break;
         case 4:
-            if ((hlp & 0b00010000) == 1) {
+            if (((hlp & 0b00010000) >> 4) == 1) {
                 hlp -= 0b00010000;
             }
             break;
         case 5:
-            if ((hlp & 0b00100000) == 1) {
+            if (((hlp & 0b00100000) >> 5) == 1) {
                 hlp -= 0b00100000;
             }
             break;
         case 6:
-            if ((hlp & 0b01000000) == 1) {
+            if (((hlp & 0b01000000) >> 6) == 1) {
                 hlp -= 0b01000000;
             }
             break;
         case 7:
-            if ((hlp & 0b10000000) == 1) {
+            if (((hlp & 0b01000000) >> 7) == 1) {
                 hlp -= 0b10000000;
             }
             break;
@@ -821,37 +831,37 @@ void Cpu::SET_b_r(int bit, uint8_t r) {
             }
             break;
         case 1:
-            if ((r & 0b00000010) == 0) {
+            if (((r & 0b00000010) >> 1) == 0) {
                 r += 0b00000010;
             }
             break;
         case 2:
-            if ((r & 0b00000100) == 0) {
+            if (((r & 0b00000100) >> 2) == 0) {
                 r += 0b00000100;
             }
             break;
         case 3:
-            if ((r & 0b00001000) == 0) {
+            if (((r & 0b00001000) >> 3) == 0) {
                 r += 0b00001000;
             }
             break;
         case 4:
-            if ((r & 0b00010000) == 0) {
+            if (((r & 0b00010000) >> 4) == 0) {
                 r += 0b00010000;
             }
             break;
         case 5:
-            if ((r & 0b00100000) == 0) {
+            if (((r & 0b00100000) >> 5) == 0) {
                 r += 0b00100000;
             }
             break;
         case 6:
-            if ((r & 0b01000000) == 0) {
+            if (((r & 0b01000000) >> 6) == 0) {
                 r += 0b01000000;
             }
             break;
         case 7:
-            if ((r & 0b10000000) == 0) {
+            if (((r & 0b01000000) >> 7) == 0) {
                 r += 0b10000000;
             }
             break;
@@ -869,37 +879,37 @@ void Cpu::SET_b_hlp(int bit) {
             }
             break;
         case 1:
-            if ((hlp & 0b00000010) == 0) {
+            if (((hlp & 0b00000010) >> 1) == 0) {
                 hlp += 0b00000010;
             }
             break;
         case 2:
-            if ((hlp & 0b00000100) == 0) {
+            if (((hlp & 0b00000100) >> 2) == 0) {
                 hlp += 0b00000100;
             }
             break;
         case 3:
-            if ((hlp & 0b00001000) == 0) {
+            if (((hlp & 0b00001000) >> 3) == 0) {
                 hlp += 0b00001000;
             }
             break;
         case 4:
-            if ((hlp & 0b00010000) == 0) {
+            if (((hlp & 0b00010000) >> 4) == 0) {
                 hlp += 0b00010000;
             }
             break;
         case 5:
-            if ((hlp & 0b00100000) == 0) {
+            if (((hlp & 0b00100000) >> 5) == 0) {
                 hlp += 0b00100000;
             }
             break;
         case 6:
-            if ((hlp & 0b01000000) == 0) {
+            if (((hlp & 0b01000000) >> 6) == 0) {
                 hlp += 0b01000000;
             }
             break;
         case 7:
-            if ((hlp & 0b10000000) == 0) {
+            if (((hlp & 0b01000000) >> 7) == 0) {
                 hlp += 0b10000000;
             }
             break;

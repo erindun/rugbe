@@ -68,6 +68,10 @@ class Cpu {
         void XOR_a_x(uint8_t);
         void OR_a_x(uint8_t);
         void CP_a_x(uint8_t);
+        void DAA();
+        void CPL();
+        void CCF();
+        void SCF();
         void INC_rr(uint16_t&);
         void DEC_rr(uint16_t&);
         void ADD_hl_rr(uint16_t);
