@@ -5,13 +5,15 @@
 
 #include "registers.hpp"
 #include "../mmu/mmu.hpp"
+#include "../ppu/ppu.hpp"
 
 class Cpu {
     public:
-        Cpu(Mmu* mmu);
+        Cpu(Mmu*);
         void load_rom(const char* filepath);
         void emulate();
         void disassemble_op();
+        int cycles;
 
     private:
         Mmu* mmu;
@@ -19,7 +21,7 @@ class Cpu {
         bool increment_pc;
         Registers reg;
         uint16_t sp;
-        int cycles;
+ 
 
         // Read data from memory
         template <typename T>

@@ -1,11 +1,14 @@
 #include "cpu.hpp"
 
 // Initialize CPU
-Cpu::Cpu(Mmu* mmu) : mmu {mmu}, pc {0}, sp {0xfffe}, cycles {0} {}
+Cpu::Cpu(Mmu* mmu) : cycles {0}, mmu {mmu}, pc {0}, sp {0xfffe} {}
 
 void Cpu::emulate() {
     // Increment PC by default. Some instructions may set this to false.
     increment_pc = true;
+
+    // Reset cycle counter
+    cycles = 0;
 
     uint8_t op = read_mmu(pc);
 
