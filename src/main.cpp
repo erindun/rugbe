@@ -1,20 +1,15 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
-#include "mmu/mmu.hpp"
-#include "cpu/cpu.hpp"
+#include "gameboy.hpp"
 
 int main(int argc, char** argv) {
-    // Initialize components
-    Mmu mmu;
-    Cpu cpu = Cpu(&mmu);
-
-    // Load ROM into memory
-    mmu.load_rom(argv[1]);
+    // Load ROM into Game Boy
+    GameBoy gb(argv[1]);
 
     // Emulation loop
     while (true) {
-        cpu.emulate();
+        gb.emulate();
 
         // Slow down so that instructions are readable
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
