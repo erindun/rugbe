@@ -1,7 +1,7 @@
 #ifndef PPU_HPP
 #define PPU_HPP
 #include <array>
-#include "../cpu/cpu.hpp"
+class Mmu;
 
 class Ppu {
     private:
@@ -20,11 +20,11 @@ class Ppu {
         // Totals number of cycles from CPU to determine mode
         int mode_clock;
 
-        // Pointer to CPU
-        Cpu* cpu;
+        // Pointer to MMU
+        Mmu* mmu;
 
     public:
-        Ppu(Cpu*);
+        Ppu(Mmu*);
         void step_clock();
 };
 

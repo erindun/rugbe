@@ -3,6 +3,19 @@
 #include <memory>
 #include <cstring>
 #include "mmu.hpp"
+#include "../cpu/cpu.hpp"
+
+
+// Read a byte from memory
+uint8_t Mmu::read(uint16_t addr) {
+    Cpu::cycles += 4;
+    return mmu.at(addr);
+}
+
+void Mmu::write(uint16_t addr, uint8_t data) {
+    Cpu::cycles += 4;
+    mmu.at(addr) = data;
+}
 
 // Load ROM into memory
 // Currently, it loads memory into $0000 where the boot ROM begins;

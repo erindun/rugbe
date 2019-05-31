@@ -1,7 +1,32 @@
 #include "cpu.hpp"
+#include "../mmu/mmu.hpp"
 
 // Initialize CPU
-Cpu::Cpu(Mmu* mmu) : cycles {0}, mmu {mmu}, pc {0}, sp {0xfffe} {}
+Cpu::Cpu(Mmu* mmu) : mmu {mmu}, pc {0}, sp {0xfffe} {}
+int Cpu::cycles = 0;
+
+// Get immediate 8-bit data
+uint8_t Cpu::get_n() {
+    ++pc;
+    return mmu->read(pc);
+}
+
+// Get immediate 16-bit data
+uint16_t Cpu::get_nn() {
+    uint16_t lowbyte = get_n();
+    uint16_t highbyte = get_n() << 8;
+    return highbyte | lowbyte; 
+}
+
+// Get immediate 8-bit signed data
+int8_t Cpu::get_i() {
+    return static_cast<int8_t>(get_n());
+}
+
+// Get (HL)
+uint8_t Cpu::get_hlp() {
+    return mmu->read(reg.hl());
+}
 
 void Cpu::emulate() {
     // Increment PC by default. Some instructions may set this to false.
@@ -10,7 +35,7 @@ void Cpu::emulate() {
     // Reset cycle counter
     cycles = 0;
 
-    uint8_t op = read_mmu(pc);
+    uint8_t op = mmu->read(pc);
 
     switch (op) {
         case 0x00: break; // NOP
@@ -39,7 +64,7 @@ void Cpu::emulate() {
         case 0x17: RL_r(reg.a()); break;
         case 0x18: JR_i(); break;
         case 0x19: ADD_hl_rr(reg.de()); break;
-        case 0x1a: LD_r_x(reg.a(), read_mmu(reg.de())); break;
+        case 0x1a: LD_r_x(reg.a(), mmu->read(reg.de())); break;
         case 0x1b: DEC_rr(reg.de()); break;
         case 0x1c: INC_r(reg.e()); break;
         case 0x1d: DEC_r(reg.e()); break;
@@ -55,7 +80,7 @@ void Cpu::emulate() {
         case 0x27: break; // TODO: DAA
         case 0x28: JR_i(reg.get_zf()); break;
         case 0x29: ADD_hl_rr(reg.hl()); break;
-        case 0x2a: LD_r_x(reg.a(), read_mmu(reg.hl())); ++reg.hl(); break;
+        case 0x2a: LD_r_x(reg.a(), mmu->read(reg.hl())); ++reg.hl(); break;
         case 0x2b: DEC_rr(reg.hl()); break;
         case 0x2c: INC_r(reg.l()); break;
         case 0x2d: DEC_r(reg.l()); break;
@@ -71,7 +96,7 @@ void Cpu::emulate() {
         case 0x37: SCF(); break;
         case 0x38: JR_i(reg.get_cf()); break;
         case 0x39: ADD_hl_rr(sp); break;
-        case 0x3a: --reg.hl(); LD_r_x(reg.a(), read_mmu(reg.hl())); break;
+        case 0x3a: --reg.hl(); LD_r_x(reg.a(), mmu->read(reg.hl())); break;
         case 0x3b: DEC_rr(sp); break;
         case 0x3c: INC_r(reg.a()); break;
         case 0x3d: DEC_r(reg.a()); break;
@@ -83,7 +108,7 @@ void Cpu::emulate() {
         case 0x43: LD_r_x(reg.b(), reg.e()); break;
         case 0x44: LD_r_x(reg.b(), reg.h()); break;
         case 0x45: LD_r_x(reg.b(), reg.l()); break;
-        case 0x46: LD_r_x(reg.b(), read_mmu(reg.hl())); break;
+        case 0x46: LD_r_x(reg.b(), mmu->read(reg.hl())); break;
         case 0x47: LD_r_x(reg.b(), reg.a()); break;
         case 0x48: LD_r_x(reg.c(), reg.b()); break;
         case 0x49: LD_r_x(reg.c(), reg.c()); break;
@@ -91,7 +116,7 @@ void Cpu::emulate() {
         case 0x4b: LD_r_x(reg.c(), reg.e()); break;
         case 0x4c: LD_r_x(reg.c(), reg.h()); break;
         case 0x4d: LD_r_x(reg.c(), reg.l()); break;
-        case 0x4e: LD_r_x(reg.c(), read_mmu(reg.hl())); break;
+        case 0x4e: LD_r_x(reg.c(), mmu->read(reg.hl())); break;
         case 0x4f: LD_r_x(reg.c(), reg.a()); break;
         case 0x50: LD_r_x(reg.d(), reg.b()); break;
         case 0x51: LD_r_x(reg.d(), reg.c()); break;
@@ -99,7 +124,7 @@ void Cpu::emulate() {
         case 0x53: LD_r_x(reg.d(), reg.e()); break;
         case 0x54: LD_r_x(reg.d(), reg.h()); break;
         case 0x55: LD_r_x(reg.d(), reg.l()); break;
-        case 0x56: LD_r_x(reg.d(), read_mmu(reg.hl())); break;
+        case 0x56: LD_r_x(reg.d(), mmu->read(reg.hl())); break;
         case 0x57: LD_r_x(reg.d(), reg.a()); break;
         case 0x58: LD_r_x(reg.e(), reg.b()); break;
         case 0x59: LD_r_x(reg.e(), reg.c()); break;
@@ -107,7 +132,7 @@ void Cpu::emulate() {
         case 0x5b: LD_r_x(reg.e(), reg.e()); break;
         case 0x5c: LD_r_x(reg.e(), reg.h()); break;
         case 0x5d: LD_r_x(reg.e(), reg.l()); break;
-        case 0x5e: LD_r_x(reg.e(), read_mmu(reg.hl())); break;
+        case 0x5e: LD_r_x(reg.e(), mmu->read(reg.hl())); break;
         case 0x5f: LD_r_x(reg.e(), reg.a()); break;
         case 0x60: LD_r_x(reg.h(), reg.b()); break;
         case 0x61: LD_r_x(reg.h(), reg.c()); break;
@@ -115,7 +140,7 @@ void Cpu::emulate() {
         case 0x63: LD_r_x(reg.h(), reg.e()); break;
         case 0x64: LD_r_x(reg.h(), reg.h()); break;
         case 0x65: LD_r_x(reg.h(), reg.l()); break;
-        case 0x66: LD_r_x(reg.h(), read_mmu(reg.hl())); break;
+        case 0x66: LD_r_x(reg.h(), mmu->read(reg.hl())); break;
         case 0x67: LD_r_x(reg.h(), reg.a()); break;
         case 0x68: LD_r_x(reg.l(), reg.b()); break;
         case 0x69: LD_r_x(reg.l(), reg.c()); break;
@@ -123,7 +148,7 @@ void Cpu::emulate() {
         case 0x6b: LD_r_x(reg.l(), reg.e()); break;
         case 0x6c: LD_r_x(reg.l(), reg.h()); break;
         case 0x6d: LD_r_x(reg.l(), reg.l()); break;
-        case 0x6e: LD_r_x(reg.l(), read_mmu(reg.hl())); break;
+        case 0x6e: LD_r_x(reg.l(), mmu->read(reg.hl())); break;
         case 0x6f: LD_r_x(reg.l(), reg.a()); break;
         case 0x70: LD_xxp_x(reg.hl(), reg.b()); break;
         case 0x71: LD_xxp_x(reg.hl(), reg.c()); break;
@@ -139,7 +164,7 @@ void Cpu::emulate() {
         case 0x7b: LD_r_x(reg.a(), reg.e()); break;
         case 0x7c: LD_r_x(reg.a(), reg.h()); break;
         case 0x7d: LD_r_x(reg.a(), reg.l()); break;
-        case 0x7e: LD_r_x(reg.a(), read_mmu(reg.hl())); break;
+        case 0x7e: LD_r_x(reg.a(), mmu->read(reg.hl())); break;
         case 0x7f: LD_r_x(reg.a(), reg.a()); break;
         case 0x80: ADD_a_x(reg.b()); break;
         case 0x81: ADD_a_x(reg.c()); break;
@@ -147,7 +172,7 @@ void Cpu::emulate() {
         case 0x83: ADD_a_x(reg.e()); break;
         case 0x84: ADD_a_x(reg.h()); break;
         case 0x85: ADD_a_x(reg.l()); break;
-        case 0x86: ADD_a_x(read_mmu(reg.hl())); break;
+        case 0x86: ADD_a_x(mmu->read(reg.hl())); break;
         case 0x87: ADD_a_x(reg.a()); break;
         case 0x88: ADC_a_x(reg.b()); break;
         case 0x89: ADC_a_x(reg.c()); break;
@@ -155,7 +180,7 @@ void Cpu::emulate() {
         case 0x8b: ADC_a_x(reg.e()); break;
         case 0x8c: ADC_a_x(reg.h()); break;
         case 0x8d: ADC_a_x(reg.l()); break;
-        case 0x8e: ADC_a_x(read_mmu(reg.hl())); break;
+        case 0x8e: ADC_a_x(mmu->read(reg.hl())); break;
         case 0x8f: ADC_a_x(reg.a()); break;
         case 0x90: SUB_a_x(reg.b()); break;
         case 0x91: SUB_a_x(reg.c()); break;
@@ -163,7 +188,7 @@ void Cpu::emulate() {
         case 0x93: SUB_a_x(reg.e()); break;
         case 0x94: SUB_a_x(reg.h()); break;
         case 0x95: SUB_a_x(reg.l()); break;
-        case 0x96: SUB_a_x(read_mmu(reg.hl())); break;
+        case 0x96: SUB_a_x(mmu->read(reg.hl())); break;
         case 0x97: SUB_a_x(reg.a()); break;
         case 0x98: SBC_a_x(reg.b()); break;
         case 0x99: SBC_a_x(reg.c()); break;
@@ -171,7 +196,7 @@ void Cpu::emulate() {
         case 0x9b: SBC_a_x(reg.e()); break;
         case 0x9c: SBC_a_x(reg.h()); break;
         case 0x9d: SBC_a_x(reg.l()); break;
-        case 0x9e: SBC_a_x(read_mmu(reg.hl())); break;
+        case 0x9e: SBC_a_x(mmu->read(reg.hl())); break;
         case 0x9f: SBC_a_x(reg.a()); break;
         case 0xa0: AND_a_x(reg.b()); break;
         case 0xa1: AND_a_x(reg.c()); break;
@@ -179,7 +204,7 @@ void Cpu::emulate() {
         case 0xa3: AND_a_x(reg.e()); break;
         case 0xa4: AND_a_x(reg.h()); break;
         case 0xa5: AND_a_x(reg.l()); break;
-        case 0xa6: AND_a_x(read_mmu(reg.hl())); break;
+        case 0xa6: AND_a_x(mmu->read(reg.hl())); break;
         case 0xa7: AND_a_x(reg.a()); break;
         case 0xa8: XOR_a_x(reg.b()); break;
         case 0xa9: XOR_a_x(reg.c()); break;
@@ -187,7 +212,7 @@ void Cpu::emulate() {
         case 0xab: XOR_a_x(reg.e()); break;
         case 0xac: XOR_a_x(reg.h()); break;
         case 0xad: XOR_a_x(reg.l()); break;
-        case 0xae: XOR_a_x(read_mmu(reg.hl())); break;
+        case 0xae: XOR_a_x(mmu->read(reg.hl())); break;
         case 0xaf: XOR_a_x(reg.a()); break;
         case 0xb0: OR_a_x(reg.b()); break;
         case 0xb1: OR_a_x(reg.c()); break;
@@ -195,7 +220,7 @@ void Cpu::emulate() {
         case 0xb3: OR_a_x(reg.e()); break;
         case 0xb4: OR_a_x(reg.h()); break;
         case 0xb5: OR_a_x(reg.l()); break;
-        case 0xb6: OR_a_x(read_mmu(reg.hl())); break;
+        case 0xb6: OR_a_x(mmu->read(reg.hl())); break;
         case 0xb7: OR_a_x(reg.a()); break;
         case 0xb8: CP_a_x(reg.b()); break;
         case 0xb9: CP_a_x(reg.c()); break;
@@ -203,7 +228,7 @@ void Cpu::emulate() {
         case 0xbb: CP_a_x(reg.e()); break;
         case 0xbc: CP_a_x(reg.h()); break;
         case 0xbd: CP_a_x(reg.l()); break;
-        case 0xbe: CP_a_x(read_mmu(reg.hl())); break;
+        case 0xbe: CP_a_x(mmu->read(reg.hl())); break;
         case 0xbf: CP_a_x(reg.a()); break;
         case 0xc0: RET_c(!reg.get_zf()); break;
         case 0xc1: POP_rr(reg.b(), reg.c()); break;
@@ -218,7 +243,7 @@ void Cpu::emulate() {
         case 0xca: JP_nn(reg.get_zf()); break;
         case 0xcb: 
             ++pc;
-            op = read_mmu(pc);
+            op = mmu->read(pc);
             switch (op) {
                 case 0x00: RLC_r(reg.b()); break;
                 case 0x01: RLC_r(reg.c()); break;
@@ -524,7 +549,7 @@ void Cpu::emulate() {
         case 0xf7: RST_h(30); break;
         case 0xf8: LD_rr_rri(reg.hl(), sp); break;
         case 0xf9: LD_rr_rr(sp, reg.hl()); break;
-        case 0xfa: LD_r_x(reg.a(), read_mmu(get_nn())); break;
+        case 0xfa: LD_r_x(reg.a(), mmu->read(get_nn())); break;
         case 0xfb: break; // TODO: EI
         case 0xfc: break;
         case 0xfd: break;

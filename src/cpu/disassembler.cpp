@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <bitset>
 #include "cpu.hpp"
+#include "../mmu/mmu.hpp"
 
 using std::cout;
 using std::endl;

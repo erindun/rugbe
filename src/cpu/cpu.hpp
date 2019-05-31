@@ -4,7 +4,7 @@
 #include <cstdint>
 
 #include "registers.hpp"
-#include "../mmu/mmu.hpp"
+class Mmu;
 
 class Cpu {
     public:
@@ -12,7 +12,7 @@ class Cpu {
         void load_rom(const char* filepath);
         void emulate();
         void disassemble_op();
-        int cycles;
+        static int cycles;
 
     private:
         Mmu* mmu;
@@ -20,38 +20,12 @@ class Cpu {
         bool increment_pc;
         Registers reg;
         uint16_t sp;
- 
 
-        // Read data from memory
-        template <typename T>
-        uint8_t read_mmu(T addr) { cycles += 4; return mmu->at(addr); }
-
-        // Write data into memory
-        template <typename T> 
-        void write_mmu(T addr, uint8_t data) { cycles += 4; mmu->at(addr) = data; }
-
-        // Get immediate 8-bit data
-        inline uint8_t get_n() {
-            ++pc;
-            return read_mmu(pc);
-        }
-
-        // Get immediate 16-bit data
-        inline uint16_t get_nn() {
-            uint16_t lowbyte = get_n();
-            uint16_t highbyte = get_n() << 8;
-            return highbyte | lowbyte; 
-        }
-
-        // Get immediate 8-bit signed data
-        inline int8_t get_i() {
-            return static_cast<int8_t>(get_n());
-        }
-
-        // Get (HL)
-        inline uint8_t get_hlp() {
-            return read_mmu(reg.hl());
-        }
+        // Retrieve values frequently accessed by instructions
+        uint8_t get_n();
+        uint16_t get_nn();
+        int8_t get_i();
+        uint8_t get_hlp();
 
         // Push/pop values to stack
         void push(uint8_t, uint8_t);

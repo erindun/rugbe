@@ -1,14 +1,16 @@
 #include "ppu.hpp"
+#include "../mmu/mmu.hpp"
+#include "../cpu/cpu.hpp"
 
 // Create pointer to CPU
-Ppu::Ppu(Cpu* cpu) : cpu {cpu} {}
+Ppu::Ppu(Mmu* mmu) : mmu {mmu} {}
 
 void Ppu::step_clock() {
     // Clock to determine PPU mode
-    mode_clock += cpu->cycles;
+    mode_clock += Cpu::cycles;
 
     // Counts current line. Ranges from 0-153, where 144-153 are
-    // for the vblank perio.
+    // for the vblank period.
     int line = 0;
 
     switch (mode) {

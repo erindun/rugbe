@@ -1,19 +1,20 @@
 #include "cpu.hpp"
+#include "../mmu/mmu.hpp"
 #include <iostream>
 
 // Push args into stack
-inline void Cpu::push(uint8_t x, uint8_t y) {
+void Cpu::push(uint8_t x, uint8_t y) {
     --sp;
-    write_mmu(sp, x);
+    mmu->write(sp, x);
     --sp;
-    write_mmu(sp, y);
+    mmu->write(sp, y);
 }
 
 // Pop word from stack into args
-inline void Cpu::pop(uint8_t& x, uint8_t& y) {
-    y = read_mmu(sp);
+void Cpu::pop(uint8_t& x, uint8_t& y) {
+    y = mmu->read(sp);
     ++sp;
-    x = read_mmu(sp);
+    x = mmu->read(sp);
     ++sp;
 }
 
@@ -141,7 +142,7 @@ void Cpu::LD_r_x(uint8_t& r1, uint8_t r2) {
 }
 
 void Cpu::LD_xxp_x(uint16_t xx, uint8_t x) {
-    write_mmu(xx, x);
+    mmu->write(xx, x);
 }
 
 void Cpu::LD_rr_nn(uint16_t& rr) {
@@ -153,8 +154,8 @@ void Cpu::LD_nnp_rr(uint16_t rr) {
     uint8_t highbyte = (rr >> 8 & 0xff);
     uint8_t lowbyte = rr & 0xff;
 
-    write_mmu(get_n(), highbyte);
-    write_mmu(get_n(), lowbyte);
+    mmu->write(get_n(), highbyte);
+    mmu->write(get_n(), lowbyte);
 }
 
 void Cpu::LD_rr_rri(uint16_t rr1, uint16_t rr2) {
@@ -175,19 +176,19 @@ void Cpu::LD_rr_rr(uint16_t rr1, uint16_t rr2) {
 }
 
 void Cpu::LDH_np_a() {
-    write_mmu(0xff00 + get_n(), reg.a());
+    mmu->write(0xff00 + get_n(), reg.a());
 }
 
 void Cpu::LDH_a_np() {
-    reg.a() =  read_mmu(0xff00 + get_n());
+    reg.a() =  mmu->read(0xff00 + get_n());
 }
 
 void Cpu::LD_cp_a() {
-    write_mmu(0xff00 + reg.c(), reg.a());
+    mmu->write(0xff00 + reg.c(), reg.a());
 }
 
 void Cpu::LD_a_cp() {
-    reg.a() = read_mmu(0xff00 + reg.c());
+    reg.a() = mmu->read(0xff00 + reg.c());
 }
 
 void Cpu::POP_rr(uint8_t r1, uint8_t r2) {
@@ -217,12 +218,12 @@ void Cpu::INC_r(uint8_t& r) {
 }
 
 void Cpu::INC_rrp(uint16_t addr) {
-    uint8_t val = read_mmu(addr);
+    uint8_t val = mmu->read(addr);
     reg.set_nf(0);
     reg.calc_hf(val, 1);
 
     ++val;
-    write_mmu(addr, val);
+    mmu->write(addr, val);
 
     reg.calc_zf(val);
 }
@@ -237,12 +238,12 @@ void Cpu::DEC_r(uint8_t& r) {
 }
 
 void Cpu::DEC_rrp(uint16_t addr) {
-    uint8_t val = read_mmu(addr);
+    uint8_t val = mmu->read(addr);
     reg.set_nf(1);
     reg.calc_hf(val, 1);
 
     --val;
-    write_mmu(addr, val);
+    mmu->write(addr, val);
 
     reg.calc_zf(val);
 }
@@ -507,7 +508,7 @@ void Cpu::RLC_hlp() {
 
     rlc(hlp);
 
-    write_mmu(oldhlp, hlp);
+    mmu->write(oldhlp, hlp);
 }
 
 // Rotate (HL) right
@@ -517,7 +518,7 @@ void Cpu::RRC_hlp() {
 
     rrc(hlp);
 
-    write_mmu(oldhlp, hlp);
+    mmu->write(oldhlp, hlp);
 }
 
 // Rotate (HL) left through carry
@@ -527,7 +528,7 @@ void Cpu::RL_hlp() {
 
     rl(hlp);
 
-    write_mmu(oldhlp, hlp);
+    mmu->write(oldhlp, hlp);
 }
 
 // Rotate (HL) right through carry
@@ -537,7 +538,7 @@ void Cpu::RR_hlp() {
 
     rr(hlp);
 
-    write_mmu(oldhlp, hlp);
+    mmu->write(oldhlp, hlp);
 }
 
 // Shift r left logical
@@ -552,7 +553,7 @@ void Cpu::SLA_hlp() {
 
     sla(hlp);
 
-    write_mmu(oldhlp, hlp);
+    mmu->write(oldhlp, hlp);
 }
 
 // Shift u8 right. Bit 0 becomes CF
@@ -567,7 +568,7 @@ void Cpu::SRA_hlp() {
 
     sra(hlp);
 
-    write_mmu(oldhlp, hlp);
+    mmu->write(oldhlp, hlp);
 }
 
 // Swap nibbles (e.g. byte 11110000 becomes 00001111)
@@ -582,7 +583,7 @@ void Cpu::SWAP_hlp() {
 
     swap(hlp);
 
-    write_mmu(oldhlp, hlp);
+    mmu->write(oldhlp, hlp);
 }
 
 // Shift r right logical
@@ -597,7 +598,7 @@ void Cpu::SRL_hlp() {
 
     sra(hlp);
 
-    write_mmu(oldhlp, hlp);
+    mmu->write(oldhlp, hlp);
 }
 
 // Test bit N of u8 and set ZF accordingly
