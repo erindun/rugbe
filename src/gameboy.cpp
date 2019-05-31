@@ -1,6 +1,6 @@
 #include "gameboy.hpp"
 
-GameBoy::GameBoy(const char* filepath) : cpu {Cpu(&mmu)}, ppu {&mmu} {
+GameBoy::GameBoy(const char* filepath) : mmu {&ppu}, cpu {Cpu(&mmu)}, ppu {&mmu} {
     mmu.load_rom(filepath);
 }
 void GameBoy::emulate() { 

@@ -1,18 +1,18 @@
 #ifndef PPU_HPP
 #define PPU_HPP
 #include <array>
+#include <bitset>
 class Mmu;
 
 class Ppu {
     private:
-        // LCD is made up of 4-bit pixels
-        struct Pixel {
-            bool bit0;
-            bool bit1;
-            bool bit2;
-            bool bit3;
-        };
-        std::array<Pixel, 160 * 144> lcd;
+        // C++11 3D-array syntax...yikes!!
+        // This is an array of 384 tiles of 8*8, 2-bit pixels.
+        // Because the way pixels are stored in memory is rather convoluted,
+        // the values of the tiles are parsed when writing to memory and
+        // stored here so they are easier to process.
+        std::array<std::array<std::array<uint8_t, 8>, 8>, 384> tileset;
+
 
         // Modes for different timings
         enum Mode {HBLANK, VBLANK, SCANLINE_OAM, SCANLINE_VRAM} mode;
@@ -26,6 +26,7 @@ class Ppu {
     public:
         Ppu(Mmu*);
         void step_clock();
+        void update_tileset();
 };
 
 #endif // PPU_HPP
