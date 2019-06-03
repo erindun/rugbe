@@ -3,21 +3,19 @@
 #include <memory>
 #include <cstring>
 #include "mmu.hpp"
-#include "../ppu/ppu.hpp"
 #include "../cpu/cpu.hpp"
 
-Mmu::Mmu(Ppu* ppu) : ppu {ppu} { mmu.fill(0); }
+Mmu::Mmu(Cpu* cpu) : cpu {cpu} { mmu.fill(0); }
 
 // Read a byte from memory
 uint8_t Mmu::read(uint16_t addr) {
-    Cpu::cycles += 4;
+    cpu->cycles += 4;
     return mmu.at(addr);
 }
 
 void Mmu::write(uint16_t addr, uint8_t data) {
-    Cpu::cycles += 4;
+    cpu->cycles += 4;
     // If value is written to VRAM, update the PPU's internal tileset
-    if ((addr >= 0x8000) && (addr <= 0x9fff)) ppu->update_tileset();
     mmu.at(addr) = data;
 }
 

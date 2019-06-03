@@ -2,16 +2,13 @@
 #define PPU_HPP
 #include <array>
 #include <bitset>
+#include <queue>
 class Mmu;
 
 class Ppu {
     private:
-        // C++11 3D-array syntax...yikes!!
-        // This is an array of 384 tiles of 8*8, 2-bit pixels.
-        // Because the way pixels are stored in memory is rather convoluted,
-        // the values of the tiles are parsed when writing to memory and
-        // stored here so they are easier to process.
-        std::array<std::array<std::array<uint8_t, 8>, 8>, 384> tileset;
+        std::queue<uint8_t> fifo;
+        std::queue<uint8_t> fetcher_buffer;
 
 
         // Modes for different timings
@@ -24,9 +21,12 @@ class Ppu {
         Mmu* mmu;
 
     public:
+        int cycles;
         Ppu(Mmu*);
         void step_clock();
         void update_tileset();
+        void fetcher(uint16_t addr);
+        void update_fifo();
 };
 
 #endif // PPU_HPP

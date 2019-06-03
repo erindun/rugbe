@@ -1,9 +1,14 @@
 #include "cpu.hpp"
 #include "../mmu/mmu.hpp"
+#include "../ppu/ppu.hpp"
 
 // Initialize CPU
-Cpu::Cpu(Mmu* mmu) : mmu {mmu}, pc {0}, sp {0xfffe} {}
-int Cpu::cycles = 0;
+Cpu::Cpu(Mmu* mmu, Ppu* ppu) : cycles {0}, mmu {mmu}, ppu {ppu}, pc {0}, sp {0xfffe} {}
+
+// Dispatch cycles to other components
+void Cpu::dispatch_cycles() {
+    ppu->cycles = cycles;
+}
 
 // Get immediate 8-bit data
 uint8_t Cpu::get_n() {
@@ -28,7 +33,7 @@ uint8_t Cpu::get_hlp() {
     return mmu->read(reg.hl());
 }
 
-void Cpu::emulate() {
+void Cpu::execute_instruction() {
     // Increment PC by default. Some instructions may set this to false.
     increment_pc = true;
 

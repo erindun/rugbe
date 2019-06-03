@@ -5,21 +5,26 @@
 
 #include "registers.hpp"
 class Mmu;
+class Ppu;
 
 class Cpu {
     public:
-        Cpu(Mmu*);
+        Cpu(Mmu*, Ppu*);
         void load_rom(const char* filepath);
-        void emulate();
+        void execute_instruction();
         void disassemble_op();
-        static int cycles;
+        int cycles;
 
     private:
         Mmu* mmu;
+        Ppu* ppu;
         uint16_t pc;
         bool increment_pc;
         Registers reg;
         uint16_t sp;
+
+        // Dispatch cycles to other components
+        void dispatch_cycles();
 
         // Retrieve values frequently accessed by instructions
         uint8_t get_n();
