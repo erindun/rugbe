@@ -3,6 +3,7 @@
 #include <array>
 #include <cstdint>
 class Cpu;
+class Ppu;
 
 // Wrapper class for an array serving as the system's MMU.
 
@@ -10,9 +11,10 @@ class Mmu {
     private:
         std::array<uint8_t, 65536> mmu;
         Cpu* cpu;
+        Ppu* ppu;
 
     public:
-        Mmu(Cpu*);
+        Mmu(Cpu*, Ppu*);
 
         uint8_t& at(int i) {
             return mmu.at(i);

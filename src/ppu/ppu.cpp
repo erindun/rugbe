@@ -3,9 +3,48 @@
 #include "../cpu/cpu.hpp"
 
 // Create pointer to CPU
-Ppu::Ppu(Mmu* mmu) : mmu {mmu}, tile_addr {0x9800},
-                     mode {SCANLINE_OAM}, mode_clock {0}
-{}
+Ppu::Ppu() : tile_addr {0x9800}, mode {SCANLINE_OAM}, mode_clock {0} {}
+
+uint8_t Ppu::read_vram(uint16_t addr) {
+    // VRAM is only 8192 bytes, so and addr with $1fff
+    return vram.at(addr & 0x1fff);
+}
+
+void Ppu::write_vram(uint16_t addr, uint8_t data) {
+    // VRAM is only 8192 bytes, so and addr with $1fff
+    addr &= 0x1fff;
+
+    vram.at(addr) = data;
+
+    // If value is not in the tileset, return
+    if ((addr) > 0x1800) return;
+
+    // Get first byte of tile row
+    addr &= 0xfffe;
+
+    // Two bytes in the tile row
+    uint8_t byte1 = vram.at(addr);
+    uint8_t byte2 = vram.at(addr + 1);
+
+    int tile_index =  addr / 16;
+    int row_index  = (addr % 16) / 2;
+
+    // Push to tileset
+    for (int i = 0; i < 8; ++i) {
+        // Find each bit of pixel
+        bool bit0 = (byte1 >> i) & 1;
+        bool bit1 = (byte2 >> i) & 1;
+
+        // Determine pixel value
+        Pixel pixel = ZERO;
+        if (!bit0 && !bit1) pixel = ZERO;
+        if (bit0 && !bit1)  pixel = ONE;
+        if (!bit0 && bit1)  pixel = TWO;
+        if (bit0 && bit1)   pixel = THREE;        
+
+        tileset.at(tile_index).at(row_index).at(i) = pixel;
+    }
+}
 
 void Ppu::step_clock() {
     // Clock to determine PPU mode
@@ -49,7 +88,6 @@ void Ppu::step_clock() {
                 } else {
                     mode = SCANLINE_OAM;
                 }
-
             }
             break;
 
@@ -70,7 +108,7 @@ void Ppu::step_clock() {
 
 void Ppu::fetcher() {
     if (fetcher_buffer.empty()) {
-        if (get_bg_map()) {
+        if (bg_map) {
             tile_addr = 0x9800;
         } else {
             tile_addr = 0x9c00;
@@ -78,9 +116,9 @@ void Ppu::fetcher() {
 
 
         // Read value of tile row (2 bytes) from memory
-        uint8_t tile = mmu->read(tile_addr);
-        uint8_t tile_data0 = mmu->read(tile);
-        uint8_t tile_data1 = mmu->read(tile + 1);
+        uint8_t tile = vram.at(tile_addr);
+        uint8_t tile_data0 = vram.at(tile);
+        uint8_t tile_data1 = vram.at(tile + 1);
 
         // Push value of each pixel to buffer
         for (int i = 0; i < 8; ++i) {

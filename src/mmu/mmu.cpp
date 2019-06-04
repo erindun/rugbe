@@ -3,20 +3,41 @@
 #include <memory>
 #include <cstring>
 #include "mmu.hpp"
-#include "../cpu/cpu.hpp"
 
-Mmu::Mmu(Cpu* cpu) : cpu {cpu} { mmu.fill(0); }
+#include "../cpu/cpu.hpp"
+#include "../ppu/ppu.hpp"
+
+Mmu::Mmu(Cpu* cpu, Ppu* ppu) : cpu {cpu}, ppu {ppu} { mmu.fill(0); }
 
 // Read a byte from memory
 uint8_t Mmu::read(uint16_t addr) {
     cpu->cycles += 4;
-    return mmu.at(addr);
+
+    switch  (addr & 0xf000) {
+        case 0x8000: case 0x9000:
+            return ppu->read_vram(addr);
+
+        default:
+            return mmu.at(addr);
+    }
 }
 
+// Write a byte into memory. If it is written to an address that is
+// emulated externally (e.g. VRAM) write to that object's data instead.
 void Mmu::write(uint16_t addr, uint8_t data) {
+    // Add cycles to CPU
     cpu->cycles += 4;
-    // If value is written to VRAM, update the PPU's internal tileset
-    mmu.at(addr) = data;
+
+    switch (addr & 0xf000) {
+        // If value is written to VRAM, update the PPU's internal data
+        case 0x8000: case 0x9000:
+            ppu->write_vram(addr, data);
+            break;
+
+        default:
+            mmu.at(addr) = data;
+            break;
+    }
 }
 
 // Load ROM into memory
