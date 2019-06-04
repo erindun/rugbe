@@ -4,8 +4,14 @@ GameBoy::GameBoy(const char* filepath) : mmu {&cpu}, cpu {Cpu(&mmu, &ppu)}, ppu 
     mmu.load_rom(filepath);
 }
 void GameBoy::emulate() { 
-    cpu.execute_instruction();
-    ppu.step_clock();
+    // Reset cycle counter
+    cpu.cycles = 0;
+
+    // Emulate one frame
+    while (cpu.cycles < 70224) {
+        cpu.execute_instruction();
+        ppu.step_clock();
+    }
 }
 
 void GameBoy::test_boot_rom() { mmu.test_boot_rom(); };

@@ -37,9 +37,6 @@ void Cpu::execute_instruction() {
     // Increment PC by default. Some instructions may set this to false.
     increment_pc = true;
 
-    // Reset cycle counter
-    cycles = 0;
-
     uint8_t op = mmu->read(pc);
 
     switch (op) {

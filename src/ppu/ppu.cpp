@@ -3,7 +3,9 @@
 #include "../cpu/cpu.hpp"
 
 // Create pointer to CPU
-Ppu::Ppu(Mmu* mmu) : mmu {mmu} {}
+Ppu::Ppu(Mmu* mmu) : mmu {mmu}, tile_addr {0x9800},
+                     mode {SCANLINE_OAM}, mode_clock {0}
+{}
 
 void Ppu::step_clock() {
     // Clock to determine PPU mode
@@ -28,7 +30,10 @@ void Ppu::step_clock() {
             if (mode_clock >= 172) {
                 mode_clock = 0;
                 mode = HBLANK;
-                // TODO: Write to framebuffer
+
+                // Render scanline
+                fetcher();
+                update_fifo(); 
             }
             break;
 
@@ -38,11 +43,17 @@ void Ppu::step_clock() {
                 mode_clock = 0;
                 ++line;
 
+                if (line == 143) {
+                    mode = VBLANK;
+                    // TODO: Render frame
+                } else {
+                    mode = SCANLINE_OAM;
+                }
+
             }
             break;
 
         case VBLANK:
-            // TODO: Render frame
             if (mode_clock >= 456) {
                 mode_clock = 0;
                 ++line;
@@ -57,12 +68,19 @@ void Ppu::step_clock() {
     }
 }
 
-void Ppu::fetcher(uint16_t addr) {
+void Ppu::fetcher() {
     if (fetcher_buffer.empty()) {
+        if (get_bg_map()) {
+            tile_addr = 0x9800;
+        } else {
+            tile_addr = 0x9c00;
+        }
+
+
         // Read value of tile row (2 bytes) from memory
-        uint8_t tile_addr = mmu->read(addr);
-        uint8_t tile_data0 = mmu->read(tile_addr);
-        uint8_t tile_data1 = mmu->read(tile_addr + 1);
+        uint8_t tile = mmu->read(tile_addr);
+        uint8_t tile_data0 = mmu->read(tile);
+        uint8_t tile_data1 = mmu->read(tile + 1);
 
         // Push value of each pixel to buffer
         for (int i = 0; i < 8; ++i) {
@@ -75,6 +93,7 @@ void Ppu::fetcher(uint16_t addr) {
             bit0 ? pixel += 1 : pixel += 0;
             bit1 ? pixel += 2 : pixel += 0;
             fetcher_buffer.push(pixel);
+
         }
     }
 }
