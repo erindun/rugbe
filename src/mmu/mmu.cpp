@@ -17,6 +17,13 @@ uint8_t Mmu::read(uint16_t addr) {
         case 0x8000: case 0x9000:
             return ppu->read_vram(addr);
 
+        case 0xff40:
+            return (ppu->bg_switch  ? 0x01 : 0x00) |
+                   (ppu->bg_map     ? 0x08 : 0x00) |
+                   (ppu->bg_tile    ? 0x10 : 0x00) |
+                   (ppu->lcd_switch ? 0x80 : 0x00);
+            break;
+
         default:
             return mmu.at(addr);
     }
@@ -32,6 +39,13 @@ void Mmu::write(uint16_t addr, uint8_t data) {
         // If value is written to VRAM, update the PPU's internal data
         case 0x8000: case 0x9000:
             ppu->write_vram(addr, data);
+            break;
+
+        case 0xff40:
+            ppu->bg_switch  = (addr & 0x1)  ? 1 : 0;
+            ppu->bg_map     = (addr & 0x8)  ? 1 : 0;
+            ppu->bg_tile    = (addr & 0x10) ? 1 : 0;
+            ppu->lcd_switch = (addr & 0x80) ? 1 : 0;
             break;
 
         default:

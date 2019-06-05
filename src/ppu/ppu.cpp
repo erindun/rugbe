@@ -3,7 +3,14 @@
 #include "../cpu/cpu.hpp"
 
 // Create pointer to CPU
-Ppu::Ppu() : tile_addr {0x9800}, mode {SCANLINE_OAM}, mode_clock {0} {}
+Ppu::Ppu() : tile_addr {0x9800},
+             mode {SCANLINE_OAM},
+             mode_clock {0},
+             bg_switch {false},
+             bg_map {false},
+             bg_tile {false},
+             lcd_switch {false}
+{}
 
 uint8_t Ppu::read_vram(uint16_t addr) {
     // VRAM is only 8192 bytes, so and addr with $1fff

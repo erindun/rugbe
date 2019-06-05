@@ -23,13 +23,13 @@ class Ppu {
         // Totals number of cycles from CPU to determine mode
         int mode_clock;
 
+    public:
         // Registers
         bool bg_switch;
         bool bg_map;
         bool bg_tile;
         bool lcd_switch;
 
-    public:
         int cycles;
         Ppu();
         uint8_t read_vram(uint16_t);
