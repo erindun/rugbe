@@ -24,6 +24,15 @@ uint8_t Mmu::read(uint16_t addr) {
                    (ppu->lcd_switch ? 0x80 : 0x00);
             break;
 
+        case 0xff42:
+            return ppu->scy;
+
+        case 0xff43:
+            return ppu->scx;
+
+        case 0xff44:
+            return ppu->scanline;
+
         default:
             return mmu.at(addr);
     }
@@ -41,12 +50,25 @@ void Mmu::write(uint16_t addr, uint8_t data) {
             ppu->write_vram(addr, data);
             break;
 
+        // LCD control register
         case 0xff40:
             ppu->bg_switch  = (addr & 0x1)  ? 1 : 0;
             ppu->bg_map     = (addr & 0x8)  ? 1 : 0;
             ppu->bg_tile    = (addr & 0x10) ? 1 : 0;
             ppu->lcd_switch = (addr & 0x80) ? 1 : 0;
             break;
+        
+        // Scroll Y
+        case 0xff42:
+            ppu->scy = data;
+
+        // Scroll X
+        case 0xff43:
+            ppu->scx = data;
+
+        // Current scanline
+        case 0xff47:
+            ppu->palette = data;
 
         default:
             mmu.at(addr) = data;

@@ -5,11 +5,11 @@
 #include "ppu/ppu.hpp"
 
 class GameBoy {
-    private:
+    public :
         Mmu mmu;
         Cpu cpu;
         Ppu ppu;
-    public:
+
         GameBoy(const char*);
         void emulate();
         void test_boot_rom();

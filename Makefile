@@ -2,10 +2,12 @@ CXX = g++
 
 CXXFLAGS = -Wall -Werror
 
+LFLAGS = -lmingw32 -lSDL2main -lSDL2
+
 OBJS = main.o disassembler.o cpu.o instructions.o mmu.o ppu.o gameboy.o
 
 all: $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OBJS) -o rugbe
+	$(CXX) $(CXXFLAGS) $(OBJS) $(LFLAGS) -o rugbe
 
 main.o: src/main.cpp
 	$(CXX) $(CXXFLAGS) -c src/main.cpp

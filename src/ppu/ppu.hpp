@@ -3,25 +3,33 @@
 #include <array>
 #include <bitset>
 #include <queue>
+#include <SDL2/SDL.h>
 
 class Ppu {
     private:
         // FIFO and fetcher which load pixels to the screen
         std::array<uint8_t, 8192> vram;
-        std::queue<uint8_t> fifo;
-        std::queue<uint8_t> fetcher_buffer;
-        uint16_t tile_addr;
 
         // Modes for different timings
         enum Mode {HBLANK, VBLANK, SCANLINE_OAM, SCANLINE_VRAM} mode;
 
-        // Tile set
+        // Totals number of cycles from CPU to determine mode
+        int mode_clock;
+
+        // Pixel
+        // A pixel is 2-bits in size, so there are 4 possible color values
         enum Pixel {ZERO, ONE, TWO, THREE};
+
+        // Tile set
+        // A tile is made up of 8 * 8 pixels
         typedef std::array<std::array<Pixel, 8>, 8> Tile;
         std::array<Tile, 384> tileset;
 
-        // Totals number of cycles from CPU to determine mode
-        int mode_clock;
+        // Render framebuffer to the emulated screen
+        void render();
+
+        // Push framebuffer to SDL Surface
+        void update_frame();
 
     public:
         // Registers
@@ -29,15 +37,20 @@ class Ppu {
         bool bg_map;
         bool bg_tile;
         bool lcd_switch;
+        uint8_t scy;
+        uint8_t scx;
+        uint8_t scanline;
+        uint8_t palette;
 
         int cycles;
+        
+        // LCD screen
+        std::array<uint32_t, 160 * 144> lcd;
+
         Ppu();
         uint8_t read_vram(uint16_t);
         void write_vram(uint16_t, uint8_t);
         void step_clock();
-        void update_tileset();
-        void fetcher();
-        void update_fifo();
 };
 
 #endif // PPU_HPP

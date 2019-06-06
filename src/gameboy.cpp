@@ -1,8 +1,12 @@
+#include <SDL2/SDL.h>
+#include <iostream>
 #include "gameboy.hpp"
 
-GameBoy::GameBoy(const char* filepath) : mmu {&cpu, &ppu}, cpu {Cpu(&mmu, &ppu)} {
+GameBoy::GameBoy(const char* filepath) : mmu {&cpu, &ppu}, cpu {Cpu(&mmu, &ppu)}
+{
     mmu.load_rom(filepath);
 }
+
 void GameBoy::emulate() { 
     // Reset cycle counter
     cpu.cycles = 0;
@@ -10,7 +14,7 @@ void GameBoy::emulate() {
     // Emulate one frame
     while (cpu.cycles < 70224) {
         cpu.execute_instruction();
-        ppu.step_clock();
+        ppu.step_clock();        
     }
 }
 

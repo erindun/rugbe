@@ -1,6 +1,8 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
+#include <SDL2/SDL.h>
+
 #include "gameboy.hpp"
 
 int main(int argc, char** argv) {
@@ -13,8 +15,7 @@ int main(int argc, char** argv) {
     // Emulation loop
     while (true) {
         gb.emulate();
-
-        // Slow down so that instructions are readable
-        //std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
+
+    return 0;
 }
