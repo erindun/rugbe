@@ -25,11 +25,11 @@ class Ppu {
         typedef std::array<std::array<Pixel, 8>, 8> Tile;
         std::array<Tile, 384> tileset;
 
-        // Render framebuffer to the emulated screen
+        // Render one scanline
         void render();
 
-        // Push framebuffer to SDL Surface
-        void update_frame();
+        // Draw to screen
+        void draw();
 
     public:
         // Registers

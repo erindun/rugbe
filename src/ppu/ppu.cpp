@@ -20,7 +20,11 @@ Ppu::Ppu() : mode {SCANLINE_OAM},
              bg_switch {false},
              bg_map {false},
              bg_tile {false},
-             lcd_switch {false}
+             lcd_switch {false},
+             scy {0},
+             scx {0},
+             scanline {0},
+             palette {0}
 {
     // Initialize SDL
     const int SCREEN_WIDTH = 640;
@@ -154,7 +158,9 @@ void Ppu::render() {
     }
 
     std::cout << "test" <<std::endl;
-    
+}
+
+void Ppu::draw() {
     // Update texture
     SDL_UpdateTexture(texture, NULL, lcd.data(), 160 * sizeof(uint32_t));
 
@@ -170,7 +176,6 @@ void Ppu::step_clock() {
 
     // Counts current line. Ranges from 0-153, where 144-153 are
     // for the vblank period.
-    int line = 0;
 
     switch (mode) {
 
@@ -188,7 +193,7 @@ void Ppu::step_clock() {
                 mode_clock = 0;
                 mode = HBLANK;
 
-                // Render scanline
+                // Render a scanline
                 render();
             }
             break;
@@ -197,11 +202,12 @@ void Ppu::step_clock() {
         case HBLANK:
             if (mode_clock >= 204) {
                 mode_clock = 0;
-                ++line;
+                ++scanline;
 
-                if (line == 143) {
+                if (scanline == 143) {
                     mode = VBLANK;
-                    // TODO: Render frame
+                    // Draw to screen
+                     draw();
                 } else {
                     mode = SCANLINE_OAM;
                 }
@@ -211,14 +217,16 @@ void Ppu::step_clock() {
         case VBLANK:
             if (mode_clock >= 456) {
                 mode_clock = 0;
-                ++line;
+                ++scanline;
 
                 // Return to top of screen
-                if (line > 153) {
+                if (scanline > 153) {
                     mode = SCANLINE_OAM;
-                    line = 0;
+                    scanline = 0;
                 }
             }
             break;
     }
+
+    std::cout << (int)scanline << std::endl;
 }
