@@ -3,7 +3,6 @@
 
 GameBoy::GameBoy(const char* filepath) : mmu {&cpu, &ppu}, cpu {Cpu(&mmu, &ppu)}
 {
-    std::cout << "yee" << std::endl;
     mmu.load_rom(filepath);
 }
 
@@ -14,7 +13,7 @@ void GameBoy::emulate() {
     // Emulate one frame
     while (cpu.cycles < 70224) {
         cpu.execute_instruction();
-        ppu.step_clock();        
+        ppu.step_clock();
     }
 }
 

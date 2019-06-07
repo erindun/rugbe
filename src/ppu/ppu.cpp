@@ -117,6 +117,7 @@ void Ppu::render() {
         if (x == 8) {
             line_offset = (line_offset + 1) & 0x1f;
             tile = vram.at(line_offset + map_offset);
+            x = 0;
         }
     }
 }
