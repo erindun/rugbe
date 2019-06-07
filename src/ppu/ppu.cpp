@@ -19,7 +19,7 @@ Ppu::Ppu() : mode {SCANLINE_OAM},
     // Initialize tileset to all white pixels
     for (int i = 0; i < 384; ++i) {
         for (int y = 0; y < 8; ++y) {
-            for (int x = 0; i < 8; ++x) {
+            for (int x = 0; x < 8; ++x) {
                 tileset.at(i).at(y).at(x) = WHITE;
             }
         }
