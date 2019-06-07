@@ -8,7 +8,7 @@
 // Pixels are mapped to the appropriate SDL Uint32 color values.
 enum Pixel: Uint32 {
     BLACK      = 0x000000ff,
-    DARK_GRAY  = 0X606060ff,
+    DARK_GRAY  = 0x606060ff,
     LIGHT_GRAY = 0xC0C0C0ff,
     WHITE      = 0xffffffff
 };
