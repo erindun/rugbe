@@ -4,7 +4,7 @@ CXXFLAGS = -Wall -Werror
 
 LFLAGS = -lmingw32 -lSDL2main -lSDL2
 
-OBJS = main.o disassembler.o cpu.o instructions.o mmu.o ppu.o gameboy.o
+OBJS = main.o disassembler.o cpu.o instructions.o mmu.o ppu.o gameboy.o video.o
 
 all: $(OBJS)
 	$(CXX) $(CXXFLAGS) $(OBJS) $(LFLAGS) -o rugbe
@@ -29,6 +29,9 @@ ppu.o: src/ppu/ppu.cpp
 
 gameboy.o: src/gameboy.cpp
 	$(CXX) $(CXXFLAGS) -c src/gameboy.cpp
+
+video.o: src/video/video.cpp
+	$(CXX) $(CXXFLAGS) -c src/video/video.cpp
 
 clean:
 	rm -rf *.o rugbe

@@ -1,9 +1,9 @@
-#include <SDL2/SDL.h>
 #include <iostream>
 #include "gameboy.hpp"
 
 GameBoy::GameBoy(const char* filepath) : mmu {&cpu, &ppu}, cpu {Cpu(&mmu, &ppu)}
 {
+    std::cout << "yee" << std::endl;
     mmu.load_rom(filepath);
 }
 

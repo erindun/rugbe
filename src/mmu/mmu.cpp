@@ -22,7 +22,6 @@ uint8_t Mmu::read(uint16_t addr) {
                    (ppu->bg_map     ? 0x08 : 0x00) |
                    (ppu->bg_tile    ? 0x10 : 0x00) |
                    (ppu->lcd_switch ? 0x80 : 0x00);
-            break;
 
         case 0xff42:
             return ppu->scy;
@@ -61,14 +60,17 @@ void Mmu::write(uint16_t addr, uint8_t data) {
         // Scroll Y
         case 0xff42:
             ppu->scy = data;
+            break;
 
         // Scroll X
         case 0xff43:
             ppu->scx = data;
+            break;
 
         // Current scanline
         case 0xff47:
             ppu->palette = data;
+            break;
 
         default:
             mmu.at(addr) = data;

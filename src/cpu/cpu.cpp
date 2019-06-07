@@ -559,4 +559,5 @@ void Cpu::execute_instruction() {
         case 0xff: RST_h(38); break;
     }
     if (increment_pc) ++pc;
+    dispatch_cycles();
 }

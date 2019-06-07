@@ -1,19 +1,9 @@
-#include <SDL2/SDL.h>
 #include <iostream>
 
 #include "ppu.hpp"
 #include "../mmu/mmu.hpp"
 #include "../cpu/cpu.hpp"
-
-const Uint32 WHITE      = 0xffffffff;
-const Uint32 LIGHT_GRAY = 0xC0C0C0ff;
-const Uint32 DARK_GRAY  = 0x606060ff;
-const Uint32 BLACK      = 0x000000ff;
-
-// SDL
-SDL_Window* window;
-SDL_Texture* texture;
-SDL_Renderer* renderer;
+#include "../video/video.hpp"
 
 Ppu::Ppu() : mode {SCANLINE_OAM},
              mode_clock {0},
@@ -26,40 +16,17 @@ Ppu::Ppu() : mode {SCANLINE_OAM},
              scanline {0},
              palette {0}
 {
-    // Initialize SDL
-    const int SCREEN_WIDTH = 640;
-    const int SCREEN_HEIGHT = 576;
-    if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
-        std::cerr << "SDL initialization failure. SDL_Error: "
-                  << SDL_GetError() << std::endl;
+    // Initialize tileset to all white pixels
+    for (int i = 0; i < 384; ++i) {
+        for (int y = 0; y < 8; ++y) {
+            for (int x = 0; i < 8; ++x) {
+                tileset.at(i).at(y).at(x) = WHITE;
+            }
+        }
     }
 
-    //Create window
-    window = SDL_CreateWindow("rugbe", SDL_WINDOWPOS_UNDEFINED,
-                              SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH,
-                              SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-    if (window == nullptr) {
-        std::cerr << "Failed to create window. SDL_Error: " 
-                  << SDL_GetError() << std::endl;
-    }
-
-    // Create renderer
-    renderer = SDL_CreateRenderer(window, -1, 0);
-    SDL_RenderSetLogicalSize(renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
-    if (renderer == nullptr) {
-        std::cerr << "Failed to create renderer. SDL_Error: " 
-                  << SDL_GetError() << std::endl;
-    }
-
-    // Create texture that stores frame buffer
-    texture = SDL_CreateTexture(renderer,
-                                SDL_PIXELFORMAT_ARGB8888,
-                                SDL_TEXTUREACCESS_STREAMING,
-                                160, 144);
-    if (texture == nullptr) {
-        std::cerr << "Failed to create texture. SDL_Error: " 
-                  << SDL_GetError() << std::endl;
-    }
+    // Initialize framebuffer to all white pixels
+    framebuffer.fill(WHITE);
 }
 
 uint8_t Ppu::read_vram(uint16_t addr) {
@@ -73,13 +40,13 @@ void Ppu::write_vram(uint16_t addr, uint8_t data) {
 
     vram.at(addr) = data;
 
-    // If value is not in the tileset, return
-    if ((addr) > 0x1800) return;
+    // If value is not in the tileset, exit function
+    if (addr > 0x17ff) return;
 
-    // Get first byte of tile row
+    // Get the address of the first byte of tile row
     addr &= 0xfffe;
 
-    // Two bytes in the tile row
+    // Get the two bytes in the tile row
     uint8_t byte1 = vram.at(addr);
     uint8_t byte2 = vram.at(addr + 1);
 
@@ -94,13 +61,13 @@ void Ppu::write_vram(uint16_t addr, uint8_t data) {
 
         // Determine pixel value
         Pixel pixel;
-        if (!bit0 && !bit1) pixel = ZERO;
-        else if (bit0 && !bit1)  pixel = ONE;
-        else if (!bit0 && bit1)  pixel = TWO;
-        else if (bit0 && bit1)   pixel = THREE;
-        else { std::cout << "ERROR" << std::endl; exit(1); }        
+        if (!bit0 && !bit1) pixel = BLACK;
+        if (bit0 && !bit1)  pixel = DARK_GRAY;
+        if (!bit0 && bit1)  pixel = LIGHT_GRAY;
+        if (bit0 && bit1)   pixel = WHITE;
 
         tileset.at(tile_index).at(row_index).at(i) = pixel;
+        std::cout << "pixel: " << tileset.at(tile_index).at(row_index).at(i) << std::endl;
     }
 }
 
@@ -121,7 +88,7 @@ void Ppu::render() {
     int x = scx & 7;
 
     // Where to render on the screen
-    int lcd_offset = scanline * 160;
+    int screen_offset = scanline * 160;
 
     // Get tile from background map
     uint8_t tile = vram.at(map_offset + line_offset);
@@ -141,13 +108,9 @@ void Ppu::render() {
         }
 
         // Write pixel to LCD framebuffer
-        switch (pixel) {
-            case ZERO:  lcd.at(lcd_offset) = BLACK;
-            case ONE:   lcd.at(lcd_offset) = DARK_GRAY;
-            case TWO:   lcd.at(lcd_offset) = LIGHT_GRAY;
-            case THREE: lcd.at(lcd_offset) = WHITE;
-        }
-        ++lcd_offset;
+        framebuffer.at(screen_offset) = pixel; 
+
+        ++screen_offset;
 
         // Increment tile counter and roceed to next tile, if necessary
         ++x;
@@ -156,18 +119,6 @@ void Ppu::render() {
             tile = vram.at(line_offset + map_offset);
         }
     }
-
-    std::cout << "test" <<std::endl;
-}
-
-void Ppu::draw() {
-    // Update texture
-    SDL_UpdateTexture(texture, NULL, lcd.data(), 160 * sizeof(uint32_t));
-
-    // Clear screen and render
-    SDL_RenderClear(renderer);  
-    SDL_RenderCopy(renderer, texture, NULL, NULL);
-    SDL_RenderPresent(renderer);
 }
 
 void Ppu::step_clock() {
@@ -207,7 +158,7 @@ void Ppu::step_clock() {
                 if (scanline == 143) {
                     mode = VBLANK;
                     // Draw to screen
-                     draw();
+                    draw(framebuffer);
                 } else {
                     mode = SCANLINE_OAM;
                 }
@@ -228,5 +179,5 @@ void Ppu::step_clock() {
             break;
     }
 
-    std::cout << (int)scanline << std::endl;
+    //std::cout << (int)scanline << std::endl;
 }

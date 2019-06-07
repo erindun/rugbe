@@ -13,9 +13,11 @@ class Mmu {
         Cpu* cpu;
         Ppu* ppu;
 
-    public:
+    public: 
+        Mmu() {}
         Mmu(Cpu*, Ppu*);
 
+        // Bypass CPU read/write cycles and access value in memory array
         uint8_t& at(int i) {
             return mmu.at(i);
         }

@@ -9,6 +9,7 @@ class Ppu;
 
 class Cpu {
     public:
+        Cpu() {}
         Cpu(Mmu*, Ppu*);
         void load_rom(const char* filepath);
         void execute_instruction();
