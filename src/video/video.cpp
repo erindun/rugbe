@@ -14,8 +14,6 @@ void setup_video() {
         exit(1);
     }
 
-
-
     //Create window
     window = SDL_CreateWindow("rugbe", SDL_WINDOWPOS_UNDEFINED,
                                 SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH,
@@ -48,19 +46,8 @@ void setup_video() {
 }
 
 void draw(std::array<Pixel, 160 * 144> framebuffer) {
-    std::array<Uint32, 160 * 144> fb;
-
-    // TODO cleanup
-
-    for (int i = 0; i < 160 * 144; ++i) {
-        fb.at(i) = static_cast<Uint32>(fb.at(i));
-        std::cout << "Pixel value at pixel pos " << i << ": " << fb.at(i) << std::endl;
-    }
-
-
-
     // Update texture
-    SDL_UpdateTexture(texture, NULL, fb.data(), 160 * sizeof(Uint32));
+    SDL_UpdateTexture(texture, NULL, framebuffer.data(), 160 * sizeof(Uint32));
 
     // Clear screen and render
     SDL_RenderClear(renderer);  

@@ -68,7 +68,10 @@ void Ppu::write_vram(uint16_t addr, uint8_t data) {
         if (bit0 && bit1)   pixel = WHITE;
 
         tileset.at(tile_index).at(row_index).at(i) = pixel;
+        //std::cout << "Pixel #" << i << ": " << std::hex << tileset.at(tile_index).at(row_index).at(i) << std::endl;
     }
+    //std::cout << "--------------" << std::endl;
+    //SDL_Delay(750);
 }
 
 void Ppu::render() {
