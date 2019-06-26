@@ -22,35 +22,35 @@ class Registers {
 
         // Functions to access/modify each register
 
-        uint8_t& a() {
+        uint8_t& f() {
             return reg.r.at(0);
         }
 
-        uint8_t& f() {
+        uint8_t& a() {
             return reg.r.at(1);
         }
 
-        uint8_t& b() {
+        uint8_t& c() {
             return reg.r.at(2);
         }
 
-        uint8_t& c() {
+        uint8_t& b() {
             return reg.r.at(3);
         }
 
-        uint8_t& d() {
+        uint8_t& e() {
             return reg.r.at(4);
         }
 
-        uint8_t& e() {
+        uint8_t& d() {
             return reg.r.at(5);
         }
 
-        uint8_t& h() {
+        uint8_t& l() {
             return reg.r.at(6);
         }
 
-        uint8_t& l() {
+        uint8_t& h() {
             return reg.r.at(7);
         }
 
@@ -76,16 +76,16 @@ class Registers {
         // Carry flag
 
         bool get_cf() {
-            return (reg.r.at(1) & 0b00010000) >> 4;
+            return (reg.r.at(0) & 0b00010000) >> 4;
         }
 
         void set_cf(bool val) {
             switch (val) {
                 case 0:
-                    reg.r.at(1) &= 0b11101111;
+                    reg.r.at(0) &= 0b11101111;
                     break;
                 case 1:
-                    reg.r.at(1) |= 0b00010000;
+                    reg.r.at(0) |= 0b00010000;
                     break;
             }
         }
@@ -114,16 +114,16 @@ class Registers {
         // Half-carry flag
 
         bool get_hf() {
-            return (reg.r.at(1) & 0b00100000) >> 5;
+            return (reg.r.at(0) & 0b00100000) >> 5;
         }
 
         void set_hf(bool val) {
             switch (val) {
                 case 0:
-                    reg.r.at(1) &= 0b11011111;
+                    reg.r.at(0) &= 0b11011111;
                     break;
                 case 1:
-                    reg.r.at(1) |= 0b00100000;
+                    reg.r.at(0) |= 0b00100000;
                     break;
             }
         }
@@ -152,16 +152,16 @@ class Registers {
         // Subtract flag
 
         bool get_nf() {
-            return (reg.r.at(1) & 0b01000000) >> 6;
+            return (reg.r.at(0) & 0b01000000) >> 6;
         }
 
         void set_nf(bool val) {
             switch (val) {
                 case 0:
-                    reg.r.at(1) &= 0b10111111;
+                    reg.r.at(0) &= 0b10111111;
                     break;
                 case 1:
-                    reg.r.at(1) |= 0b01000000;
+                    reg.r.at(0) |= 0b01000000;
                     break;
             }
         }
@@ -169,16 +169,16 @@ class Registers {
         // Zero flag
 
         bool get_zf() {
-            return (reg.r.at(1) & 0b10000000) >> 7;
+            return (reg.r.at(0) & 0b10000000) >> 7;
         }
 
         void set_zf(bool val) {
             switch (val) {
                 case 0:
-                    reg.r.at(1) &= 0b01111111;
+                    reg.r.at(0) &= 0b01111111;
                     break;
                 case 1:
-                    reg.r.at(1) |= 0b10000000;
+                    reg.r.at(0) |= 0b10000000;
                     break;
             }
         }
