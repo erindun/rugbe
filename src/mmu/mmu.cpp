@@ -17,20 +17,23 @@ uint8_t Mmu::read(uint16_t addr) {
         case 0x8000: case 0x9000:
             return ppu->read_vram(addr);
 
-        case 0xff40:
-            return (ppu->bg_switch  ? 0x01 : 0x00) |
-                   (ppu->bg_map     ? 0x08 : 0x00) |
-                   (ppu->bg_tile    ? 0x10 : 0x00) |
-                   (ppu->lcd_switch ? 0x80 : 0x00);
+        case 0xf000:
+            switch (addr) {
+                case 0xff40:
+                    return (ppu->bg_switch  ? 0x01 : 0x00) |
+                        (ppu->bg_map     ? 0x08 : 0x00) |
+                        (ppu->bg_tile    ? 0x10 : 0x00) |
+                        (ppu->lcd_switch ? 0x80 : 0x00);
 
-        case 0xff42:
-            return ppu->scy;
+                case 0xff42:
+                    return ppu->scy;
 
-        case 0xff43:
-            return ppu->scx;
+                case 0xff43:
+                    return ppu->scx;
 
-        case 0xff44:
-            return ppu->scanline;
+                case 0xff44:
+                    return ppu->scanline;
+            }
 
         default:
             return mmu.at(addr);
@@ -49,31 +52,35 @@ void Mmu::write(uint16_t addr, uint8_t data) {
             ppu->write_vram(addr, data);
             break;
 
-        // LCD control register
-        case 0xff40:
-            ppu->bg_switch  = (addr & 0x1)  ? 1 : 0;
-            ppu->bg_map     = (addr & 0x8)  ? 1 : 0;
-            ppu->bg_tile    = (addr & 0x10) ? 1 : 0;
-            ppu->lcd_switch = (addr & 0x80) ? 1 : 0;
-            break;
-        
-        // Scroll Y
-        case 0xff42:
-            ppu->scy = data;
-            break;
+        case 0xf000:
+            switch (addr) {
+                // LCD control register
+                case 0xff40:
+                    ppu->bg_switch  = (addr & 0x1)  ? 1 : 0;
+                    ppu->bg_map     = (addr & 0x8)  ? 1 : 0;
+                    ppu->bg_tile    = (addr & 0x10) ? 1 : 0;
+                    ppu->lcd_switch = (addr & 0x80) ? 1 : 0;
+                    break;
+                
+                // Scroll Y
+                case 0xff42:
+                    ppu->scy = data;
+                    break;
 
-        // Scroll X
-        case 0xff43:
-            ppu->scx = data;
-            break;
+                // Scroll X
+                case 0xff43:
+                    ppu->scx = data;
+                    break;
 
-        // Current scanline
-        case 0xff47:
-            ppu->palette = data;
-            break;
+                // Current scanline
+                case 0xff47:
+                    ppu->palette = data;
+                    break;
 
-        default:
-            mmu.at(addr) = data;
+                default:
+                    mmu.at(addr) = data;
+                    break;
+            }
             break;
     }
 }
