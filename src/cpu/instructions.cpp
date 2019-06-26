@@ -633,7 +633,7 @@ void Cpu::BIT_b_r(int bit, uint8_t r) {
     // Set flags
     reg.calc_zf(r);
     reg.set_nf(0);
-    reg.set_hf(0);
+    reg.set_hf(1);
 }
 
 // Test bit N of u8 and set ZF accordingly
@@ -669,7 +669,7 @@ void Cpu::BIT_b_hlp(int bit) {
     // Set flags
     reg.calc_zf(hlp);
     reg.set_nf(0);
-    reg.set_hf(0);
+    reg.set_hf(1);
     
     cycles += 4;
 }
