@@ -130,7 +130,7 @@ void Mmu::test_boot_rom() {
         0xbb, 0xb9, 0x33, 0x3e
     };
 
-    for (int i = 0; i < 47; ++i) {
+    for (int i = 0; i < 48; ++i) {
         mmu.at(i + 0x104) = nintendo_logo_hexdump.at(i); 
     }
 }
