@@ -78,30 +78,11 @@ void Cpu::disassemble_op() {
 
     if (DEBUG_MODE) {
         cout << "------------------------------------------" << endl;
-        cout << "Reg A: " << endl;
-        cout << "    Hex: " << hex(reg.a()) << endl;
-        cout << "    Binary: " << std::bitset<8>(reg.a()) << endl;
-        cout << "Reg F: " << endl;
-        cout << "    Hex: " << hex(reg.f()) << endl;
-        cout << "    Binary: " << std::bitset<8>(reg.f()) << endl;
-        cout << "Reg B: " << endl;
-        cout << "    Hex: " << hex(reg.b()) << endl;
-        cout << "    Binary: " << std::bitset<8>(reg.b()) << endl;
-        cout << "Reg C: " << endl;
-        cout << "    Hex: " << hex(reg.c()) << endl;
-        cout << "    Binary: " << std::bitset<8>(reg.c()) << endl;
-        cout << "Reg D: " << endl;
-        cout << "    Hex: " << hex(reg.d()) << endl;
-        cout << "    Binary: " << std::bitset<8>(reg.d()) << endl;
-        cout << "Reg E: " << endl;
-        cout << "    Hex: " << hex(reg.e()) << endl;
-        cout << "    Binary: " << std::bitset<8>(reg.e()) << endl;
-        cout << "Reg H: " << endl;
-        cout << "    Hex: " << hex(reg.h()) << endl;
-        cout << "    Binary: " << std::bitset<8>(reg.h()) << endl;
-        cout << "Reg L: " << endl;
-        cout << "    Hex: " << hex(reg.l()) << endl;
-        cout << "    Binary: " << std::bitset<8>(reg.l()) << endl;
+        cout << "Before instruction at " << hex(pc) << ":" << endl;
+        cout << "Reg AF: " << hex(reg.af()) << endl;
+        cout << "Reg BC: " << hex(reg.bc()) << endl;
+        cout << "Reg DE: " << hex(reg.de()) << endl;
+        cout << "Reg HL: " << hex(reg.hl()) << endl;
         cout << "ZF: " << reg.get_zf() << endl;
         cout << "NF: " << reg.get_nf() << endl;
         cout << "HF: " << reg.get_hf() << endl;
