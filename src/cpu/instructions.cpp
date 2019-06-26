@@ -191,7 +191,7 @@ void Cpu::LD_a_cp() {
     reg.a() = mmu->read(0xff00 + reg.c());
 }
 
-void Cpu::POP_rr(uint8_t r1, uint8_t r2) {
+void Cpu::POP_rr(uint8_t& r1, uint8_t& r2) {
     pop(r1, r2);
 }
 
