@@ -43,7 +43,7 @@ inline void Cpu::rrc(uint8_t& x) {
 // Rotate left through carry
 inline void Cpu::rl(uint8_t& x) {
     bool carry = reg.get_cf();
-    reg.set_cf((reg.a() & 0b10000000) >> 7);
+    reg.set_cf((x & 0b10000000) >> 7);
     x <<= 1;
 
     // Set bit0 to the value of the carry
@@ -71,7 +71,7 @@ inline void Cpu::rr(uint8_t& x) {
 
 // Shift left arithmetic
 inline void Cpu::sla(uint8_t& x) {
-    reg.set_cf((reg.a() & 0b10000000) >> 7);
+    reg.set_cf((x & 0b10000000) >> 7);
 
     x <<= 1;
     
@@ -83,7 +83,7 @@ inline void Cpu::sla(uint8_t& x) {
 
 // Shift right arithmetic
 inline void Cpu::sra(uint8_t& x) {
-    reg.set_cf((reg.a() & 0b10000000) >> 7);
+    reg.set_cf((x & 0b10000000) >> 7);
 
     x >>= 1;
     
@@ -95,7 +95,7 @@ inline void Cpu::sra(uint8_t& x) {
 
 // Shift right logical TODO
 inline void Cpu::srl(uint8_t& x) {
-    reg.set_cf((reg.a() & 0b10000000) >> 7);
+    reg.set_cf((x & 0b10000000) >> 7);
 
     x >>= 1;
     
